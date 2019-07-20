@@ -1,4 +1,3 @@
-# Created by .ignore support plugin (hsz.mobi)
-/config/.env
+.env
 /dist/
 /node_modules/
