@@ -31,7 +31,7 @@ const routes = [
     }
   },
   {
-    path: '/:productId/charging',
+    path: '/product/:productId/charging',
     method: 'get',
     handler: async (req: Request, res: Response) => {
 
