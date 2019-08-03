@@ -1,10 +1,10 @@
 import {Request, Response} from 'express';
 
 const routes = [{
-  path: '/alerts',
+  path: '/admin',
   method: 'get',
   handler: async (req: Request, res: Response) => {
-    res.send('No Alerts');
+    res.send('No Admin');
   }
 }];
 

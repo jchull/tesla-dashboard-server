@@ -2,10 +2,17 @@ import {Request, Response} from 'express';
 
 const routes = [
   {
-    path: '/status',
+    path: '/user/:username',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      res.send('Service is up');
+      res.send('No users');
+    }
+  },
+  {
+    path: '/user/',
+    method: 'post',
+    handler: async (req: Request, res: Response) => {
+
     }
   }
 ];

@@ -1,5 +1,7 @@
-import productRoutes from './products';
-import userRoutes from './users';
+import productRoutes from './product';
+import userRoutes from './user';
+import adminRoutes from './admin'
+import vehicleRoutes from './vehicle';
 
 import {Request, Response} from 'express';
 
@@ -11,5 +13,5 @@ const home = {
   }
 };
 
-export default [home, ...productRoutes, ...userRoutes];
+export default [home, ...productRoutes, ...userRoutes, ...adminRoutes, ...vehicleRoutes];
 

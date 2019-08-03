@@ -1,32 +1,33 @@
-import http from 'http';
+import {IConfiguration} from './model/Configuration';
+import {createServer} from 'http';
+// @ts-ignore
 import express from 'express';
 import {applyMiddleware, applyRoutes} from './util';
 import routes from './routes';
 import middleware from './middleware';
-import cookieParser from 'cookie-parser';
-import logger from 'morgan';
+import {PersistenceService} from './services/PersistenceService';
 
-import cors from 'cors';
+const envfile = process.argv[2] || './config/.env';
+require('dotenv')
+    .config({path: envfile});
+const config = Object.assign({}, process.env);
+
 
 const router = express();
 applyMiddleware(middleware, router);
 // @ts-ignore
 applyRoutes(routes, router);
-const {PORT = 3001} = process.env;
-const server = http.createServer(router);
-
-server.listen(PORT, () =>
-    console.log(`Server is running at http://localhost:${PORT} ...`)
-);
-
-router.use(logger('dev'));
-router.use(express.json());
-router.use(express.urlencoded({extended: false}));
-router.use(cookieParser());
-router.use(cors({
-  origin: 'http://localhost:3000' // TODO: get from configuration
-}));
 
 
+// @ts-ignore
+const db = new PersistenceService(config.DB_CONN);
+db.connect()
+  .then(() => db.getConfiguration())
+  .then((conf: IConfiguration) => {
+    const server = createServer(router);
+    server.listen(conf.apiPort, () =>
+        console.log(`Server is running at http://localhost:${conf.apiPort} ...`));
+    return server;
+  });
 
 
