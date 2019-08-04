@@ -1,32 +1,57 @@
-import {TeslaOwnerService} from './OwnerService';
-import {PersistenceService} from './PersistenceService';
+import {TeslaOwnerService} from './TeslaOwnerService';
+import {IConfiguration} from '../model/Configuration';
+import {ITeslaAccount} from '../model/TeslaAccount';
+import {IVehicle} from '../model/Vehicle';
+import VehicleState from '../model/VehicleState';
+import ChargeState from '../model/ChargeState';
+import DriveState from '../model/DriveState';
+import ClimateState from '../model/ClimateState';
+
+export class DataSyncService {
+  private config: IConfiguration;
+  private ownerService: TeslaOwnerService;
+
+  constructor(config: IConfiguration, teslaAccount: ITeslaAccount) {
+    this.config = config;
+    this.ownerService = new TeslaOwnerService(config.ownerBaseUrl, config.teslaClientKey, config.teslaClientSecret, teslaAccount);
+  }
 
 
-// const ownerService = new TeslaOwnerService(config.OWNER_BASE_URL, config.TESLA_CLIENT_ID, config.TESLA_CLIENT_SECRET);
-//
-// // TODO: use locally-stored token if-available and unexpired
-// ownerService.authenticate(config.TESLA_AUTH_EMAIL, process.env.TESLA_AUTH_PASSWORD)
-//
-//             // TODO: store vehicles locally to avoid calling this every time the service starts
-//             .then(() => ownerService.getVehicles())
-//
-//             // TODO: handle multiple vehicles
-//             .then(vehicleList => vehicleList && vehicleList.data && vehicleList.data.response && vehicleList.data.response[0].id_s)
-//             .then(vehicleId => beginPolling(process.env.POLLING_INTERVAL, vehicleId));
-//
-//
-// const beginPolling = (pollingInterval, vehicleId) => {
-//   const handler = getUpdateHandler(vehicleId);
-//   handler();
-//   setInterval(handler, pollingInterval);
-// };
-//
-// // TODO: watchdog to prevent missing data due to running out of memory or other possible nasties
-// const getUpdateHandler = vehicleId => {
-//   return () => {
-//     return ownerService.getState(vehicleId)
-//                        .then(vehicleData => persistenceService.postState(vehicleData),
-//                            error => console.log(error));
-//   };
-// };
+  public beginPolling(pollingInterval: number) {
+    console.log(`Polling started every ${pollingInterval / 1000} seconds...`);
+    // @ts-ignore
+    this.ownerService.checkToken()
+        .then(() => this.ownerService.getVehicles())
+        // TODO: handle errors
+        .then((vehicleList: Array<IVehicle>) => this.updateVehicles(vehicleList));
+
+  };
+
+  private updateVehicles(vehicleList: Array<IVehicle>) {
+    // Vehicle.updateOne({id_s: })
+    const handlers = vehicleList.map(vehicle => this.getUpdateHandler(vehicle.id_s));
+    handlers.forEach(handler => handler() && setInterval(handler, 60000));
+  }
+
+  private getUpdateHandler(vehicleId: string) {
+    return () => {
+      console.log('syncing vehicle data');
+      return this.ownerService.getState(vehicleId)
+                 // @ts-ignore
+                 .then(vehicleData => {
+                   if (vehicleData) {
+                     const vehicleState = Object.assign({}, vehicleData.vehicle_state);
+                     delete vehicleState.speed_limit_mode;
+                     delete vehicleState.media_state;
+                     delete vehicleState.software_update;
+                     VehicleState.create(vehicleState);
+                     ChargeState.create(vehicleData.charge_state);
+                     DriveState.create(vehicleData.drive_state);
+                     ClimateState.create(vehicleData.climate_state);
+                     console.log('data persisted');
+                   }
+                 });
+    };
+  };
+}
 

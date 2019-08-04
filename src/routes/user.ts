@@ -1,4 +1,6 @@
 import {Request, Response} from 'express';
+import User from '../model/User';
+import TeslaAccount from '../model/TeslaAccount';
 
 const routes = [
   {
@@ -9,10 +11,13 @@ const routes = [
     }
   },
   {
-    path: '/user/',
+    path: '/user',
     method: 'post',
     handler: async (req: Request, res: Response) => {
-
+      const teslaAccounts = await TeslaAccount.create(req.body.teslaAccounts);
+      const userInfo = Object.assign({}, req.body, {teslaAccounts});
+      const user = await User.create(userInfo);
+      res.status(200).json(user);
     }
   }
 ];

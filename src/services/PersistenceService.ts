@@ -10,7 +10,6 @@ export class PersistenceService {
   }
 
   async connect() {
-    // @ts-ignore
     // Mongoose.Promise = global.Promise;
     connect(this.endpoint, { useNewUrlParser: true } )
         .then((mongoose) => {
@@ -29,17 +28,6 @@ export class PersistenceService {
   async getConfiguration(): Promise<IConfiguration> {
     // @ts-ignore
     return Configuration.findOne({})
-  }
-
-
-  async getVehicles(): Promise<[IVehicle]> {
-    // @ts-ignore
-    return Vehicle.find({});
-  }
-
-  async addVehicle(vehicle: IVehicle): Promise<IVehicle> {
-    // @ts-ignore
-    return Vehicle.create(vehicle);
   }
 
 
