@@ -15,9 +15,25 @@ const routes = [
     method: 'post',
     handler: async (req: Request, res: Response) => {
       const teslaAccounts = await TeslaAccount.create(req.body.teslaAccounts);
+      // const ownerService = new TeslaOwnerService()
+      // TODO: need to check token here so the tokens are saved in DB
       const userInfo = Object.assign({}, req.body, {teslaAccounts});
       const user = await User.create(userInfo);
-      res.status(200).json(user);
+      res.status(200)
+         .json(user);
+    }
+  },
+  {
+    path: '/user',
+    method: 'put',
+    handler: async (req: Request, res: Response) => {
+      const teslaAccounts = await TeslaAccount.create(req.body.teslaAccounts);
+      // const ownerService = new TeslaOwnerService()
+      // TODO: need to check token here so the tokens are saved in DB
+      const userInfo = Object.assign({}, req.body, {teslaAccounts});
+      const user = await User.update({username: userInfo.username}, userInfo);
+      res.status(200)
+         .json(user);
     }
   }
 ];

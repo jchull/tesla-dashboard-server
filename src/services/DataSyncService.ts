@@ -67,7 +67,7 @@ export class DataSyncService {
       // @ts-ignore
       if (!lastVehicleState.length || lastVehicleState[0].state !== vehicleState.state || vehicleState.in_service || vehicleData.charge_state.charging_state !== 'Disconnected') {
         await VehicleState.create(vehicleState);
-        const chargeState = Object.assign({}, vehicleData.charge_state, {id_s});
+       const chargeState = Object.assign({}, vehicleData.charge_state, {id_s});
         const persistedChargeState = await ChargeState.create(chargeState);
 
         const driveState = Object.assign({}, vehicleData.drive_state, {id_s});
@@ -77,25 +77,25 @@ export class DataSyncService {
         // @ts-ignore
         if (persistedChargeState.charging_state === 'Charging') {
           const activeChargeSessions = await ChargeSession.find({id_s})
-                                                         .sort({$natural: -1})
-                                                         .limit(1)
-                                                         .populate('chargeStates');
-          if (activeChargeSessions.length) {
-            // @ts-ignore
-            const lastChargeState = activeChargeSessions[0].chargeStates[activeChargeSessions[0].chargeStates.length -1];
-            if (!lastChargeState || chargeState.timestamp - lastChargeState.timestamp < (120000)) {
+                                                          .sort({$natural: -1})
+                                                          .limit(1)
+                                                          .populate({
+                                                            path: 'chargeStates',
+                                                            options: {sort: {'timestamp': -1}}
+                                                          });
+          // @ts-ignore
+          if (activeChargeSessions.length && persistedChargeState.timestamp - activeChargeSessions[0].chargeStates[0].timestamp < 120000) {
               // @ts-ignore
               activeChargeSessions[0].chargeStates.push(persistedChargeState);
               // @ts-ignore
               await ChargeSession.updateOne({_id: activeChargeSessions[0]._id}, activeChargeSessions[0]);
               console.log('added state to charge session');
-            }
           } else {
             await ChargeSession.create({start_date: new Date(), id_s, chargeStates: [persistedChargeState]});
             console.log('new charging session started');
           }
         } else {
-          // if there is an unclosed charging
+          // if there is an unclosed charging, we could clean up and notify here
         }
 
       } else {

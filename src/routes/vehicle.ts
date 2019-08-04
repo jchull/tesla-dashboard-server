@@ -186,7 +186,7 @@ const routes = [
     handler: async (req: Request, res: Response) => {
       const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
                                                 .sort({$natural: -1})
-                                                .limit(req.params.limit || 1)
+                                                .limit(req.query.limit && Number(req.query.limit) || 1)
                                                 .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
       if (chargeSessions.length) {
         res.status(200)
