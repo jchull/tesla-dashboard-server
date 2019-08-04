@@ -51,10 +51,10 @@ const routes = [
     path: '/vehicle/:id_s/vehicle_state',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const vehicleStates = await VehicleState.find();
+      const vehicleStates = await VehicleState.find({id_s: req.params.id_s});
       if (vehicleStates) {
         res.status(200)
-           .json(vehicleStates.values);
+           .json(vehicleStates);
       } else {
         res.status(500)
            .json(vehicleStates);
@@ -79,10 +79,10 @@ const routes = [
     path: '/vehicle/:id_s/charge_state',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const chargeStates = await ChargeState.find();
+      const chargeStates = await ChargeState.find({id_s: req.params.id_s});
       if (chargeStates) {
         res.status(200)
-           .json(chargeStates.values);
+           .json(chargeStates);
       } else {
         res.status(500)
            .json(chargeStates);
@@ -107,10 +107,10 @@ const routes = [
     path: '/vehicle/:id_s/climate_state',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const climateStates = await ClimateState.find();
+      const climateStates = await ClimateState.find({id_s: req.params.id_s});
       if (climateStates) {
         res.status(200)
-           .json(climateStates.values);
+           .json(climateStates);
       } else {
         res.status(500)
            .json(climateStates);
@@ -135,10 +135,10 @@ const routes = [
     path: '/vehicle/:id_s/drive_state',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const driveStates = await DriveState.find();
+      const driveStates = await DriveState.find({id_s: req.params.id_s});
       if (driveStates) {
         res.status(200)
-           .json(driveStates.values);
+           .json(driveStates);
       } else {
         res.status(500)
            .json(driveStates);

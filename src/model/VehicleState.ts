@@ -2,6 +2,7 @@ import {Document, model, Schema} from 'mongoose';
 import {ISpeedLimitMode} from './SpeedLimitMode';
 
 export interface IVehicleState extends Document {
+  id_s: string;
   api_version: Number,
   autopark_state_v3: String,
   autopark_style: String,
@@ -39,6 +40,7 @@ export interface IVehicleState extends Document {
 
 
 const VehicleStateSchema: Schema = new Schema({
+  id_s: {type: String, required: true},
   api_version: {type: Number},
   autopark_state_v3: {type: String},
   autopark_style: {type: String},

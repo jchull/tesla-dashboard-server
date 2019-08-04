@@ -1,11 +1,13 @@
 import {TeslaOwnerService} from './TeslaOwnerService';
 import {IConfiguration} from '../model/Configuration';
 import {ITeslaAccount} from '../model/TeslaAccount';
-import {IVehicle} from '../model/Vehicle';
+import Vehicle, {IVehicle} from '../model/Vehicle';
 import VehicleState from '../model/VehicleState';
 import ChargeState from '../model/ChargeState';
 import DriveState from '../model/DriveState';
 import ClimateState from '../model/ClimateState';
+import VehicleConfig from '../model/VehicleConfig';
+import GuiSettings from '../model/GuiSettings';
 
 export class DataSyncService {
   private config: IConfiguration;
@@ -28,9 +30,11 @@ export class DataSyncService {
   };
 
   private updateVehicles(vehicleList: Array<IVehicle>) {
-    // Vehicle.updateOne({id_s: })
-    const handlers = vehicleList.map(vehicle => this.getUpdateHandler(vehicle.id_s));
-    handlers.forEach(handler => handler() && setInterval(handler, 60000));
+    vehicleList.forEach(vehicle => {
+      Vehicle.updateOne({id_s: vehicle.id_s}, vehicle);
+      const handler = this.getUpdateHandler(vehicle.id_s);
+      handler() && setInterval(handler, 60000);
+    });
   }
 
   private getUpdateHandler(vehicleId: string) {
@@ -40,14 +44,21 @@ export class DataSyncService {
                  // @ts-ignore
                  .then(vehicleData => {
                    if (vehicleData) {
-                     const vehicleState = Object.assign({}, vehicleData.vehicle_state);
+                     const vehicleState = Object.assign({}, vehicleData.vehicle_state, {id_s: vehicleData.id_s});
                      delete vehicleState.speed_limit_mode;
                      delete vehicleState.media_state;
                      delete vehicleState.software_update;
                      VehicleState.create(vehicleState);
-                     ChargeState.create(vehicleData.charge_state);
-                     DriveState.create(vehicleData.drive_state);
-                     ClimateState.create(vehicleData.climate_state);
+
+                     const chargeState = Object.assign({}, vehicleData.charge_state, {id_s: vehicleData.id_s});
+                     ChargeState.create(chargeState);
+
+                     const driveState = Object.assign({}, vehicleData.drive_state, {id_s: vehicleData.id_s});
+                     DriveState.create(driveState);
+
+                     // TODO: need to filter data that is persisted, some of it hardly ever updates
+                     // ClimateState.create(vehicleData.climate_state);
+                     // VehicleConfig.create(vehicleData.vehicle_config);
                      console.log('data persisted');
                    }
                  });

@@ -1,6 +1,7 @@
 import {Document, model, Schema} from 'mongoose';
 
 export interface IClimateState extends Document {
+  id_s: string,
   battery_heater: Boolean,
   // battery_heater_no_power: null,
   climate_keeper_mode: String,
@@ -32,6 +33,7 @@ export interface IClimateState extends Document {
 
 
 const ClimateStateSchema: Schema = new Schema({
+  id_s: {type: String, required: true},
   battery_heater: {type: Boolean},
   // battery_heater_no_power: {type: null},
   climate_keeper_mode: {type: String},

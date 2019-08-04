@@ -1,6 +1,7 @@
 import {Document, model, Schema} from 'mongoose';
 
 export interface IVehicleConfig extends Document {
+  id_s: string,
   can_accept_navigation_requests: Boolean,
   can_actuate_trunks: Boolean,
   car_special_type: String,
@@ -28,6 +29,7 @@ export interface IVehicleConfig extends Document {
 
 
 const VehicleConfigSchema: Schema = new Schema({
+  id_s: {type: String, required: true},
   can_accept_navigation_requests: {type: Boolean},
   can_actuate_trunks: {type: Boolean},
   car_special_type: {type: String},

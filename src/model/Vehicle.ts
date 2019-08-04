@@ -12,8 +12,8 @@ export interface IVehicle extends Document {
   id_s: string;
   calendar_enabled: boolean;
   api_version: number;
-  //backseat_token
-  //backseat_token_updated_at
+  // backseat_token: string
+  // backseat_token_updated_at: number
 }
 
 

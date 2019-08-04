@@ -1,6 +1,7 @@
 import {Document, model, Schema} from 'mongoose';
 
 export interface IDriveState extends Document {
+  id_s: string,
   gps_as_of: Date,
   heading: Number,
   latitude: Number,
@@ -16,6 +17,7 @@ export interface IDriveState extends Document {
 }
 
 const DriveStateSchema: Schema = new Schema({
+  id_s: {type: String, required: true},
   gps_as_of: {type: Date},
   heading: {type: Number},
   latitude: {type: Number},

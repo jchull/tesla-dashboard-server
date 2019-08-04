@@ -1,6 +1,7 @@
 import {Document, model, Schema} from 'mongoose';
 
 export interface IChargeState extends Document {
+  id_s: string,
   battery_heater_on: Boolean,
   battery_level: Number,
   battery_range: Number,
@@ -47,6 +48,7 @@ export interface IChargeState extends Document {
 
 
 const ChargeStateSchema: Schema = new Schema({
+  id_s: {type: String, required: true},
   battery_heater_on: {type: Boolean},
   battery_level: {type: Number},
   battery_range: {type: Number},
