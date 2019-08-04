@@ -178,6 +178,23 @@ const routes = [
            .json(driveState.errors);
       }
     }
+  },
+
+  {
+    path: '/vehicle/:id_s/charge_session',
+    method: 'get',
+    handler: async (req: Request, res: Response) => {
+      const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
+                                                .sort({$natural: -1})
+                                                .limit(req.params.limit || 1)
+                                                .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
+      if (chargeSessions.length) {
+        res.status(200)
+           .json(chargeSessions);
+      } else {
+        res.status(500);
+      }
+    }
   }
 ];
 
