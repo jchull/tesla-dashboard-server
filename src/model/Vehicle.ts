@@ -7,8 +7,8 @@ export interface IVehicle extends Document {
   option_codes: string;
   color?: string;
   //tokens
-  state: string;
-  in_service: boolean;
+  // state: string;
+  // in_service: boolean;
   id_s: string;
   calendar_enabled: boolean;
   api_version: number;
@@ -23,8 +23,6 @@ const VehicleSchema: Schema = new Schema({
   display_name: {type: String, required: true},
   color: {type: String, required: false},
   option_codes: {type: String, required: false},
-  state: {type: String, required: false},
-  in_service: {type: Boolean, required: false},
   calendar_enabled: {type: Boolean, required: false},
   api_version: {type: Number, required: false}
 

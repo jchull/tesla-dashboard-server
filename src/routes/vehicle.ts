@@ -4,6 +4,9 @@ import VehicleState from '../model/VehicleState';
 import ChargeState from '../model/ChargeState';
 import ClimateState from '../model/ClimateState';
 import DriveState from '../model/DriveState';
+import GuiSettings from '../model/GuiSettings';
+import VehicleConfig from '../model/VehicleConfig';
+import ChargeSession from '../model/ChargeSession';
 
 const routes = [
   {
@@ -42,9 +45,26 @@ const routes = [
     method: 'delete',
     handler: async (req: Request, res: Response) => {
       const id_s = req.params.id_s;
-      await Vehicle.findOneAndDelete({id_s});
-      res.status(200)
-         .send('vehicle deleted');
+      if (id_s) {
+        const deletions = await Promise.all([
+          Vehicle.findOneAndDelete({id_s}),
+          VehicleState.deleteMany({id_s}),
+          ChargeState.deleteMany({id_s}),
+          ClimateState.deleteMany({id_s}),
+          DriveState.deleteMany({id_s}),
+          GuiSettings.deleteMany({id_s}),
+          VehicleConfig.deleteMany({id_s}),
+          ChargeSession.deleteMany({id_s})
+        ]);
+
+        // @ts-ignore
+        const deletedCount: number = deletions.reduce((acc, cur) => acc + (cur && cur.deletedCount || 0), 0);
+        res.status(200)
+           .send(`vehicle and data deleted ${deletedCount} documents`);
+      } else {
+        res.status(406)
+           .send('Vehicle ID is required to be provided as :id_s');
+      }
     }
   },
   {

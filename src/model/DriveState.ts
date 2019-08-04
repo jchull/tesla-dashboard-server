@@ -30,8 +30,6 @@ const DriveStateSchema: Schema = new Schema({
   shift_state: {type: String},
   speed: {type: Number},
   timestamp: {type: Date}
-
-
 });
 
 export default model('DriveState', DriveStateSchema);

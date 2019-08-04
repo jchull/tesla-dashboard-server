@@ -19,10 +19,8 @@ export class TeslaOwnerService {
   checkToken(): Promise<any> {
     if (this.teslaAccount.access_token && this.teslaAccount.token_expires_in && this.teslaAccount.token_created_at) {
       if (Date.now() < this.teslaAccount.token_created_at.valueOf() + (1000 * this.teslaAccount.token_expires_in)) {
-        console.log('valid access_token found');
         return Promise.resolve();
       } else {
-        console.log('refreshing token...');
         return this.updateToken('refresh_token');
       }
     } else {
@@ -63,34 +61,36 @@ export class TeslaOwnerService {
 
 
   getVehicles(): Promise<Array<IVehicle>> {
-    return axios.get(`${this.endpoint}/api/1/vehicles`, {
-                  headers: {
-                    'User-Agent': 'nodejs',
-                    'Authorization': `Bearer ${this.teslaAccount.access_token}`
-                  }
-                })
-                .then((vehicleListResponse) => vehicleListResponse && vehicleListResponse.data && vehicleListResponse.data.response);
+    return this.checkToken()
+               .then(() => axios.get(`${this.endpoint}/api/1/vehicles`, {
+                 headers: {
+                   'User-Agent': 'nodejs',
+                   'Authorization': `Bearer ${this.teslaAccount.access_token}`
+                 }
+               }))
+               .then((vehicleListResponse) => vehicleListResponse && vehicleListResponse.data && vehicleListResponse.data.response);
   }
 
   getState(id: string) {
-    return axios.get(`${this.endpoint}/api/1/vehicles/${id}/vehicle_data`, {
-                  headers: {
-                    'User-Agent': 'nodejs',
-                    'Authorization': `Bearer ${this.teslaAccount.access_token}`
-                  }
-                })
-                .then((vehicle_data) => {
-                      return vehicle_data.data.response;
-                    },
-                    (err) => {
-                      const statusCode = err.response.status;
-                      switch(statusCode){
-                        case 408:
-                          console.log('Car sleeping');
-                          break;
-                        default:
-                          console.log(`Got response ${statusCode} and it is not handled yet`);
-                      }
-                    });
+    return this.checkToken()
+               .then(() => axios.get(`${this.endpoint}/api/1/vehicles/${id}/vehicle_data`, {
+                 headers: {
+                   'User-Agent': 'nodejs',
+                   'Authorization': `Bearer ${this.teslaAccount.access_token}`
+                 }
+               }))
+               .then((vehicle_data) => {
+                     return vehicle_data && vehicle_data.data && vehicle_data.data.response;
+                   },
+                   (err) => {
+                     const statusCode = err.response.status;
+                     switch (statusCode) {
+                       case 408:
+                         console.log('Car sleeping');
+                         break;
+                       default:
+                         console.log(`Got response ${statusCode} and it is not handled yet`);
+                     }
+                   });
   }
 }
