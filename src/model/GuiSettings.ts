@@ -1,7 +1,7 @@
 import {Document, model, Schema} from 'mongoose';
 
 export interface IGuiSettings extends Document {
-  id_s: string,
+  id_s: String,
   gui_24_hour_time: Boolean,
   gui_charge_rate_units: String,
   gui_distance_units: String,

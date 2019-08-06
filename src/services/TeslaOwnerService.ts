@@ -71,7 +71,7 @@ export class TeslaOwnerService {
                .then((vehicleListResponse) => vehicleListResponse && vehicleListResponse.data && vehicleListResponse.data.response);
   }
 
-  getState(id: string) {
+  getState(id: String) {
     return this.checkToken()
                .then(() => axios.get(`${this.endpoint}/api/1/vehicles/${id}/vehicle_data`, {
                  headers: {

@@ -2,10 +2,10 @@ import {TeslaOwnerService} from './TeslaOwnerService';
 import {IConfiguration} from '../model/Configuration';
 import {ITeslaAccount} from '../model/TeslaAccount';
 import Vehicle, {IVehicle} from '../model/Vehicle';
-import VehicleState from '../model/VehicleState';
 import ChargeState from '../model/ChargeState';
 import DriveState from '../model/DriveState';
 import ChargeSession from '../model/ChargeSession';
+import DriveSession from '../model/DriveSession';
 
 export class DataSyncService {
   private config: IConfiguration;
@@ -40,7 +40,7 @@ export class DataSyncService {
     });
   }
 
-  private getUpdateHandler(vehicleId: string) {
+  private getUpdateHandler(vehicleId: String) {
     return () => {
       // console.log('syncing vehicle data');
       return this.ownerService.getState(vehicleId)
@@ -61,21 +61,18 @@ export class DataSyncService {
       delete vehicleState.speed_limit_mode;
       delete vehicleState.media_state;
       delete vehicleState.software_update;
-      const lastVehicleState = await VehicleState.find({id_s})
-                                                 .sort({$natural: -1})
-                                                 .limit(1);
-      // @ts-ignore
-      if (!lastVehicleState.length || lastVehicleState[0].state !== vehicleState.state || vehicleState.in_service || vehicleData.charge_state.charging_state !== 'Disconnected') {
-        await VehicleState.create(vehicleState);
-       const chargeState = Object.assign({}, vehicleData.charge_state, {id_s});
-        const persistedChargeState = await ChargeState.create(chargeState);
 
-        const driveState = Object.assign({}, vehicleData.drive_state, {id_s});
-        await DriveState.create(driveState);
-        console.log('persisted state');
+      // @ts-ignore
+      if (!lastVehicleState.length || lastVehicleState[0].state !== vehicleState.state || vehicleData.charge_state.charging_state !== 'Disconnected') {
+// TODO: this is wrong now
+        const lastVehicleState = await ChargeState.find({id_s})
+                                                   .sort({$natural: -1})
+                                                   .limit(1);
+        const chargeState = await ChargeState.create(Object.assign({}, vehicleData.charge_state, {id_s}));
+        const driveState = await DriveState.create(Object.assign({}, vehicleData.drive_state, {id_s}));
 
         // @ts-ignore
-        if (persistedChargeState.charging_state === 'Charging') {
+        if (chargeState.charging_state === 'Charging') {
           const activeChargeSessions = await ChargeSession.find({id_s})
                                                           .sort({$natural: -1})
                                                           .limit(1)
@@ -84,18 +81,38 @@ export class DataSyncService {
                                                             options: {sort: {'timestamp': -1}}
                                                           });
           // @ts-ignore
-          if (activeChargeSessions.length && persistedChargeState.timestamp - activeChargeSessions[0].chargeStates[0].timestamp < 120000) {
-              // @ts-ignore
-              activeChargeSessions[0].chargeStates.push(persistedChargeState);
-              // @ts-ignore
-              await ChargeSession.updateOne({_id: activeChargeSessions[0]._id}, activeChargeSessions[0]);
-              console.log('added state to charge session');
+          if (activeChargeSessions.length && chargeState.timestamp - activeChargeSessions[0].chargeStates[0].timestamp < 120000) {
+            // @ts-ignore
+            activeChargeSessions[0].chargeStates.push(chargeState);
+            // @ts-ignore
+            await ChargeSession.updateOne({_id: activeChargeSessions[0]._id}, activeChargeSessions[0]);
+            console.log('added state to charge session');
           } else {
-            await ChargeSession.create({start_date: new Date(), id_s, chargeStates: [persistedChargeState]});
-            console.log('new charging session started');
+            await ChargeSession.create({start_date: new Date(), id_s, chargeStates: [chargeState]});
+            // @ts-ignore
+            console.log(`new charging session started with battery at ${chargeState.battery_level}%`);
           }
-        } else {
-          // if there is an unclosed charging, we could clean up and notify here
+        }else if (vehicleState.state) {
+          const activeDrivingSessions = await DriveSession.find({id_s})
+                                                          .sort({$natural: -1})
+                                                          .limit(1)
+                                                          .populate({
+                                                            path: 'driveStates',
+                                                            options: {sort: {'timestamp': -1}}
+                                                          });
+          // @ts-ignore
+          if (activeDrivingSessions.length && driveState.timestamp - activeDrivingSessions[0].driveStates[0].timestamp < 120000) {
+            // @ts-ignore
+            activeDrivingSessions[0].driveStates.push(driveState);
+            // @ts-ignore
+            await DriveSession.updateOne({_id: activeDrivingSessions[0]._id}, activeDrivingSessions[0]);
+            console.log('added state to charge session');
+          } else {
+            await DriveSession.create({start_date: new Date(), id_s, driveStates: [driveState]});
+            // @ts-ignore
+            console.log(`new driving session started with battery at ${chargeState.battery_level}%`);
+          }
+
         }
 
       } else {

@@ -1,12 +1,11 @@
 import {Request, Response} from 'express';
 import Vehicle from '../model/Vehicle';
-import VehicleState from '../model/VehicleState';
 import ChargeState from '../model/ChargeState';
-import ClimateState from '../model/ClimateState';
 import DriveState from '../model/DriveState';
 import GuiSettings from '../model/GuiSettings';
 import VehicleConfig from '../model/VehicleConfig';
 import ChargeSession from '../model/ChargeSession';
+import DriveSession from '../model/DriveSession';
 
 const routes = [
   {
@@ -48,9 +47,7 @@ const routes = [
       if (id_s) {
         const deletions = await Promise.all([
           Vehicle.findOneAndDelete({id_s}),
-          VehicleState.deleteMany({id_s}),
           ChargeState.deleteMany({id_s}),
-          ClimateState.deleteMany({id_s}),
           DriveState.deleteMany({id_s}),
           GuiSettings.deleteMany({id_s}),
           VehicleConfig.deleteMany({id_s}),
@@ -68,120 +65,41 @@ const routes = [
     }
   },
   {
-    path: '/vehicle/:id_s/vehicle_state',
+    path: '/vehicle/:id_s/drive',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const vehicleStates = await VehicleState.find({id_s: req.params.id_s});
-      if (vehicleStates) {
+      const driveSessions = await DriveSession.find({id_s: req.params.id_s})
+                                                .sort({$natural: -1})
+                                                .limit(req.query.limit && Number(req.query.limit) || 1)
+                                                .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
+      if (driveSessions.length) {
         res.status(200)
-           .json(vehicleStates);
+           .json(driveSessions);
       } else {
-        res.status(500)
-           .json(vehicleStates);
+        res.status(500);
       }
     }
   },
   {
-    path: '/vehicle/:id_s/vehicle_state',
-    method: 'put',
-    handler: async (req: Request, res: Response) => {
-      const vehicleState = await VehicleState.create(req.body);
-      if (!vehicleState.errors && vehicleState.id) {
-        res.status(200)
-           .json(vehicleState);
-      } else {
-        res.status(500)
-           .json(vehicleState.errors);
-      }
-    }
-  },
-  {
-    path: '/vehicle/:id_s/charge_state',
+    path: '/vehicle/:id_s/drive/:drive_id',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const chargeStates = await ChargeState.find({id_s: req.params.id_s});
-      if (chargeStates) {
-        res.status(200)
-           .json(chargeStates);
-      } else {
-        res.status(500)
-           .json(chargeStates);
-      }
-    }
-  },
-  {
-    path: '/vehicle/:id_s/charge_state',
-    method: 'put',
-    handler: async (req: Request, res: Response) => {
-      const chargeState = await ChargeState.create(req.body);
-      if (!chargeState.errors && chargeState.id) {
-        res.status(200)
-           .json(chargeState);
-      } else {
-        res.status(500)
-           .json(chargeState.errors);
-      }
-    }
-  },
-  {
-    path: '/vehicle/:id_s/climate_state',
-    method: 'get',
-    handler: async (req: Request, res: Response) => {
-      const climateStates = await ClimateState.find({id_s: req.params.id_s});
-      if (climateStates) {
-        res.status(200)
-           .json(climateStates);
-      } else {
-        res.status(500)
-           .json(climateStates);
-      }
-    }
-  },
-  {
-    path: '/vehicle/:id_s/climate_state',
-    method: 'put',
-    handler: async (req: Request, res: Response) => {
-      const climateState = await ClimateState.create(req.body);
-      if (!climateState.errors && climateState.id) {
-        res.status(200)
-           .json(climateState);
-      } else {
-        res.status(500)
-           .json(climateState.errors);
-      }
-    }
-  },
-  {
-    path: '/vehicle/:id_s/drive_state',
-    method: 'get',
-    handler: async (req: Request, res: Response) => {
-      const driveStates = await DriveState.find({id_s: req.params.id_s});
-      if (driveStates) {
-        res.status(200)
-           .json(driveStates);
-      } else {
-        res.status(500)
-           .json(driveStates);
-      }
-    }
-  },
-  {
-    path: '/vehicle/:id_s/drive_state',
-    method: 'put',
-    handler: async (req: Request, res: Response) => {
-      const driveState = await DriveState.create(req.body);
-      if (!driveState.errors && driveState.id) {
-        res.status(200)
-           .json(driveState);
-      } else {
-        res.status(500)
-           .json(driveState.errors);
-      }
-    }
-  },
+      //TODO: get the ChargeStates for this charge session
 
+      // const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
+      //                                           .sort({$natural: -1})
+      //                                           .limit(req.query.limit && Number(req.query.limit) || 1)
+      //                                           .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
+      // if (chargeSessions.length) {
+      //   res.status(200)
+      //      .json(chargeSessions);
+      // } else {
+      //   res.status(500);
+      // }
+    }
+  },
   {
-    path: '/vehicle/:id_s/charge_session',
+    path: '/vehicle/:id_s/charge',
     method: 'get',
     handler: async (req: Request, res: Response) => {
       const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
@@ -194,6 +112,24 @@ const routes = [
       } else {
         res.status(500);
       }
+    }
+  },
+  {
+    path: '/vehicle/:id_s/charge/:charge_id',
+    method: 'get',
+    handler: async (req: Request, res: Response) => {
+      //TODO: get the DriveStates for this drive session
+
+      // const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
+      //                                           .sort({$natural: -1})
+      //                                           .limit(req.query.limit && Number(req.query.limit) || 1)
+      //                                           .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
+      // if (chargeSessions.length) {
+      //   res.status(200)
+      //      .json(chargeSessions);
+      // } else {
+      //   res.status(500);
+      // }
     }
   }
 ];

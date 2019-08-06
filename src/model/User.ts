@@ -3,9 +3,9 @@ import {ITeslaAccount} from './TeslaAccount';
 import {IVehicle} from './Vehicle';
 
 export interface IUser extends Document {
-  username: string;
-  email: string;
-  role: string;
+  username: String;
+  email: String;
+  role: String;
   teslaAccounts: Array<ITeslaAccount>;
   vehicles?: Array<IVehicle>;
 }

@@ -1,7 +1,7 @@
 import {Document, model, Schema} from 'mongoose';
 
 export interface IVehicleConfig extends Document {
-  id_s: string,
+  id_s: String,
   can_accept_navigation_requests: Boolean,
   can_actuate_trunks: Boolean,
   car_special_type: String,
