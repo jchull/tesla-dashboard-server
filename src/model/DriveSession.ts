@@ -1,20 +1,25 @@
 import {Document, model, Schema} from 'mongoose';
+import {IDriveState} from './DriveState';
 
 export interface IDriveSession extends Document {
-  id_s: String,
+  id_s: string,
   start_date: Date,
   end_date: Date,  // end of trip
-  distance: number,  // end of trip
-  odometer: number // end of trip
+  distance?: number,  // end of trip
+  tags: [string],
+  first: IDriveState,
+  last?: IDriveState
 }
 
 
 const DriveSessionSchema: Schema = new Schema({
   id_s: {type: String, required: true},
   start_date: {type: Date, required: true},
-  end_date: {type: Date},
+  end_date: {type: Date, required: true},
   distance: {type: Number},
-  odometer: {type: Number}
+  tags: {type: [String]},
+  first: {type: Schema.Types.ObjectId, ref: 'DriveState'},
+  last: {type: Schema.Types.ObjectId, ref: 'DriveState'}
 
 });
 

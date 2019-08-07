@@ -2,13 +2,13 @@ import {Document, model, Schema} from 'mongoose';
 import {IDriveSession} from './DriveSession';
 
 export interface IDriveState extends Document {
-  id_s: String,
+  id_s: string,
   gps_as_of: Date,
   heading: number,
   latitude: number,
   longitude: number,
   power: number,
-  shift_state: String,
+  shift_state: string,
   speed: number,
   odometer: number,
   timestamp: Date,
@@ -36,7 +36,7 @@ export interface IDriveState extends Document {
   smart_preconditioning: boolean,
   wiper_blade_heater: boolean,
 
-  driveSession: IDriveSession
+  driveSession?: IDriveSession
 }
 
 const DriveStateSchema: Schema = new Schema({

@@ -1,14 +1,14 @@
 import {Document, model, Schema} from 'mongoose';
 
 export interface IVehicle extends Document {
-  id_s: String;
+  id_s: string;
   vehicle_id: number;
-  vin: String;
-  display_name: String;
-  option_codes: String;
-  color?: String;
+  vin: string;
+  display_name: string;
+  option_codes: string;
+  color?: string;
   //tokens
-  // state: String;
+  // state: string;
   // in_service: boolean;
   calendar_enabled: boolean;
   api_version: number;

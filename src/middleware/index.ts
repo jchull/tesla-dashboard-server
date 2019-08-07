@@ -1,3 +1,3 @@
-import {handleLogging, handleBodyRequestParsing, handleCompression, handleCors} from './common';
+import {handleBodyRequestParsing, handleCompression, handleCors, handleLogging} from './common';
 
 export default [handleLogging, handleCors, handleBodyRequestParsing, handleCompression];

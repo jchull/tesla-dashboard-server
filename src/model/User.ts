@@ -1,11 +1,11 @@
 import {Document, model, Schema} from 'mongoose';
 import {ITeslaAccount} from './TeslaAccount';
-import {IVehicle} from './Vehicle';
+import {IVehicle} from './tesla/Vehicle';
 
 export interface IUser extends Document {
-  username: String;
-  email: String;
-  role: String;
+  username: string;
+  email: string;
+  role: string;
   teslaAccounts: Array<ITeslaAccount>;
   vehicles?: Array<IVehicle>;
 }

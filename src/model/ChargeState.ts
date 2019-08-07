@@ -2,7 +2,7 @@ import {Document, model, Schema} from 'mongoose';
 import {IChargeSession} from './ChargeSession';
 
 export interface IChargeState extends Document {
-  id_s: String,
+  id_s: string,
   vehicle_id: number,
   battery_heater_on: boolean,
   battery_level: number,
@@ -12,16 +12,16 @@ export interface IChargeState extends Document {
   charge_miles_added_ideal: number,
   charge_miles_added_rated: number,
   charge_port_door_open: boolean,
-  charge_port_latch: String,
+  charge_port_latch: string,
   charge_rate: number,
   charger_actual_current: number,
   charger_power: number,
   charger_voltage: number,
-  charging_state: String,
+  charging_state: string,
   est_battery_range: number,
   ideal_battery_range: number,
   time_to_full_charge: number,
-  timestamp: number,
+  timestamp: Date,
   driver_temp_setting: number,
   fan_status: number,
   inside_temp: number,
@@ -41,7 +41,7 @@ export interface IChargeState extends Document {
   smart_preconditioning: boolean,
   is_user_present: boolean,
 
-  chargeSession: IChargeSession
+  chargeSession?: IChargeSession
 }
 
 
@@ -65,7 +65,7 @@ const ChargeStateSchema: Schema = new Schema({
   est_battery_range: {type: Number},
   ideal_battery_range: {type: Number},
   time_to_full_charge: {type: Number},
-  timestamp: {type: Number},
+  timestamp: {type: Date},
   driver_temp_setting: {type: Number},
   fan_status: {type: Number},
   inside_temp: {type: Number},

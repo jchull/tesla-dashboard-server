@@ -1,6 +1,6 @@
 import productRoutes from './product';
 import userRoutes from './user';
-import adminRoutes from './admin'
+import adminRoutes from './admin';
 import vehicleRoutes from './vehicle';
 
 import {Request, Response} from 'express';

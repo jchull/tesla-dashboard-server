@@ -1,9 +1,9 @@
 import {Request, Response} from 'express';
-import Vehicle from '../model/Vehicle';
+import Vehicle from '../model/tesla/Vehicle';
 import ChargeState from '../model/ChargeState';
 import DriveState from '../model/DriveState';
-import GuiSettings from '../model/GuiSettings';
-import VehicleConfig from '../model/VehicleConfig';
+import GuiSettings from '../model/tesla/GuiSettings';
+import VehicleConfig from '../model/tesla/VehicleConfig';
 import ChargeSession from '../model/ChargeSession';
 import DriveSession from '../model/DriveSession';
 
@@ -51,7 +51,8 @@ const routes = [
           DriveState.deleteMany({id_s}),
           GuiSettings.deleteMany({id_s}),
           VehicleConfig.deleteMany({id_s}),
-          ChargeSession.deleteMany({id_s})
+          ChargeSession.deleteMany({id_s}),
+          DriveSession.deleteMany({id_s})
         ]);
 
         // @ts-ignore
@@ -69,14 +70,15 @@ const routes = [
     method: 'get',
     handler: async (req: Request, res: Response) => {
       const driveSessions = await DriveSession.find({id_s: req.params.id_s})
-                                                .sort({$natural: -1})
-                                                .limit(req.query.limit && Number(req.query.limit) || 1)
-                                                .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
+                                              .sort({$natural: -1})
+                                              .limit(req.query.limit && Number(req.query.limit) || 1)
+                                              .populate(['first', 'last']);
       if (driveSessions.length) {
         res.status(200)
            .json(driveSessions);
       } else {
-        res.status(500);
+        res.status(500)
+           .send();
       }
     }
   },
@@ -84,18 +86,15 @@ const routes = [
     path: '/vehicle/:id_s/drive/:drive_id',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      //TODO: get the ChargeStates for this charge session
-
-      // const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
-      //                                           .sort({$natural: -1})
-      //                                           .limit(req.query.limit && Number(req.query.limit) || 1)
-      //                                           .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
-      // if (chargeSessions.length) {
-      //   res.status(200)
-      //      .json(chargeSessions);
-      // } else {
-      //   res.status(500);
-      // }
+      const driveStates = await DriveState.find({id_s: req.params.id_s, driveSession: req.params.drive_id})
+                                          .sort({$natural: 1});
+      if (driveStates.length) {
+        res.status(200)
+           .json(driveStates);
+      } else {
+        res.status(500)
+           .send();
+      }
     }
   },
   {
@@ -105,12 +104,13 @@ const routes = [
       const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
                                                 .sort({$natural: -1})
                                                 .limit(req.query.limit && Number(req.query.limit) || 1)
-                                                .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
+                                                .populate(['first', 'last']);
       if (chargeSessions.length) {
         res.status(200)
            .json(chargeSessions);
       } else {
-        res.status(500);
+        res.status(500)
+           .send();
       }
     }
   },
@@ -118,18 +118,15 @@ const routes = [
     path: '/vehicle/:id_s/charge/:charge_id',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      //TODO: get the DriveStates for this drive session
-
-      // const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
-      //                                           .sort({$natural: -1})
-      //                                           .limit(req.query.limit && Number(req.query.limit) || 1)
-      //                                           .populate({path: 'chargeStates', options: { sort: { 'timestamp': 1 } } });
-      // if (chargeSessions.length) {
-      //   res.status(200)
-      //      .json(chargeSessions);
-      // } else {
-      //   res.status(500);
-      // }
+      const chargeStates = await ChargeState.find({id_s: req.params.id_s, chargeSession: req.params.charge_id})
+                                            .sort({$natural: 1});
+      if (chargeStates.length) {
+        res.status(200)
+           .json(chargeStates);
+      } else {
+        res.status(500)
+           .send();
+      }
     }
   }
 ];

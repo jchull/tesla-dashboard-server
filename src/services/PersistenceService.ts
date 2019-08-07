@@ -1,6 +1,5 @@
-import {Mongoose, connect} from 'mongoose';
+import {connect} from 'mongoose';
 import Configuration, {IConfiguration} from '../model/Configuration';
-import Vehicle, {IVehicle} from '../model/Vehicle';
 
 export class PersistenceService {
   endpoint: string;
@@ -11,7 +10,7 @@ export class PersistenceService {
 
   async connect() {
     // Mongoose.Promise = global.Promise;
-    connect(this.endpoint, { useNewUrlParser: true } )
+    connect(this.endpoint, {useNewUrlParser: true})
         .then((mongoose) => {
           // mongoose.on('disconnected', () => {
           //   console.log('Reconnecting to DB...');
@@ -25,9 +24,9 @@ export class PersistenceService {
         });
   }
 
-  async getConfiguration(): Promise<IConfiguration> {
+  public async getConfiguration(): Promise<IConfiguration> {
     // @ts-ignore
-    return Configuration.findOne({})
+    return Configuration.findOne({});
   }
 
 

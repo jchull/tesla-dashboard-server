@@ -1,7 +1,7 @@
 import TeslaAccount, {ITeslaAccount} from '../model/TeslaAccount';
 
 import axios from 'axios';
-import {IVehicle} from '../model/Vehicle';
+import {IVehicle} from '../model/tesla/Vehicle';
 
 export class TeslaOwnerService {
   endpoint: string;
@@ -18,7 +18,8 @@ export class TeslaOwnerService {
 
   checkToken(): Promise<any> {
     if (this.teslaAccount.access_token && this.teslaAccount.token_expires_in && this.teslaAccount.token_created_at) {
-      if (Date.now() < this.teslaAccount.token_created_at.valueOf() + (1000 * this.teslaAccount.token_expires_in)) {
+      // token_expires_in is in seconds, refresh if it expires in the next 24 hours
+      if ((Date.now() - 86400000) < this.teslaAccount.token_created_at.valueOf() + (1000 * this.teslaAccount.token_expires_in)) {
         return Promise.resolve();
       } else {
         return this.updateToken('refresh_token');
@@ -42,7 +43,7 @@ export class TeslaOwnerService {
       url: `${this.endpoint}/oauth/token?grant_type=${grant_type}`,
       data,
       headers: {
-        'User-Agent': 'tesla-dashboard-sync'
+        'User-Agent': 'coderado-tesla-sync'
       }
     })
         .then((res: any) => {
@@ -64,7 +65,7 @@ export class TeslaOwnerService {
     return this.checkToken()
                .then(() => axios.get(`${this.endpoint}/api/1/vehicles`, {
                  headers: {
-                   'User-Agent': 'nodejs',
+                   'User-Agent': 'coderado-tesla-sync',
                    'Authorization': `Bearer ${this.teslaAccount.access_token}`
                  }
                }))
@@ -75,7 +76,7 @@ export class TeslaOwnerService {
     return this.checkToken()
                .then(() => axios.get(`${this.endpoint}/api/1/vehicles/${id}/vehicle_data`, {
                  headers: {
-                   'User-Agent': 'nodejs',
+                   'User-Agent': 'coderado-tesla-sync',
                    'Authorization': `Bearer ${this.teslaAccount.access_token}`
                  }
                }))
@@ -86,10 +87,17 @@ export class TeslaOwnerService {
                      const statusCode = err.response.status;
                      switch (statusCode) {
                        case 408:
-                         console.log('Car sleeping');
+                         console.log('Vehicle sleeping');
+                         break;
+                       case 502:
+                         console.log('Vehicle offline');
+                         break;
+                       case 504:
+                         console.log('Vehicle offline');
                          break;
                        default:
                          console.log(`Got response ${statusCode} and it is not handled yet`);
+                         console.log(err);
                      }
                    });
   }
