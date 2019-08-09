@@ -3,8 +3,8 @@ import {IDriveState} from './DriveState';
 
 export interface IDriveSession extends Document {
   id_s: string,
-  start_date: Date,
-  end_date: Date,  // end of trip
+  start_date: number,
+  end_date: number,  // end of trip
   distance?: number,  // end of trip
   tags: [string],
   first: IDriveState,
@@ -14,8 +14,8 @@ export interface IDriveSession extends Document {
 
 const DriveSessionSchema: Schema = new Schema({
   id_s: {type: String, required: true},
-  start_date: {type: Date, required: true},
-  end_date: {type: Date, required: true},
+  start_date: {type: Number, required: true},
+  end_date: {type: Number, required: true},
   distance: {type: Number},
   tags: {type: [String]},
   first: {type: Schema.Types.ObjectId, ref: 'DriveState'},

@@ -51,7 +51,7 @@ export class TeslaOwnerService {
           this.teslaAccount.access_token = res.data.access_token;
           this.teslaAccount.refresh_token = res.data.refresh_token;
           this.teslaAccount.token_expires_in = res.data.expires_in;
-          this.teslaAccount.token_created_at = new Date();
+          this.teslaAccount.token_created_at = Date.now();
           console.log('saving token');
           return TeslaAccount.updateOne({_id: this.teslaAccount._id}, this.teslaAccount);
         })

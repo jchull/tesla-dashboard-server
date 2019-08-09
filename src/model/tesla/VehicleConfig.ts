@@ -14,7 +14,7 @@ export interface IVehicleConfig extends Document {
   key_version: Number,
   motorized_charge_port: boolean,
   plg: boolean,
-  rear_seat_heaters: Number,
+  rear_seat_heaters: number,
   rear_seat_type: string,
   rhd: boolean,
   roof_color: string,
@@ -22,7 +22,7 @@ export interface IVehicleConfig extends Document {
   spoiler_type: string,
   sun_roof_installed: boolean,
   third_row_seats: string,
-  timestamp: Date,
+  timestamp: number,
   use_range_badging: boolean,
   wheel_type: string
 }
@@ -50,7 +50,7 @@ const VehicleConfigSchema: Schema = new Schema({
   spoiler_type: {type: String},
   sun_roof_installed: {type: Boolean},
   third_row_seats: {type: String},
-  timestamp: {type: Date},
+  timestamp: {type: Number},
   use_range_badging: {type: Boolean},
   wheel_type: {type: String}
 });

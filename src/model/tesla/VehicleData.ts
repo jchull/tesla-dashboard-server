@@ -15,7 +15,7 @@ export interface IVehicleData {
   state?: string,
   in_service?: boolean,
   calendar_enabled?: boolean,
-  api_version?: number,
+  api_version: number,
   backseat_token?: string,
   backseat_token_updated_at?: number,
   charge_state: {
@@ -118,7 +118,7 @@ export interface IVehicleData {
     can_accept_navigation_requests?: boolean,
     can_actuate_trunks?: boolean,
     car_special_type?: string,
-    car_type?: string,
+    car_type: string,
     charge_port_type?: string,
     eu_vehicle?: boolean,
     exterior_color?: string,

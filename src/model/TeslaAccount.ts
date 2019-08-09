@@ -1,7 +1,7 @@
 import {Document, model, Schema} from 'mongoose';
 
 export interface ITeslaAccount extends Document {
-  token_created_at?: Date;
+  token_created_at?: number;
   token_expires_in?: number;
   refresh_token?: string;
   access_token?: string;
@@ -13,7 +13,7 @@ export interface ITeslaAccount extends Document {
 
 const TeslaAccountSchema: Schema = new Schema({
   email: {type: String, required: true},
-  token_created_at: {type: Date, required: false},
+  token_created_at: {type: Number, required: false},
   token_expires_in: {type: Number, required: false},
   refresh_token: {type: String, required: false},
   access_token: {type: String, required: false}

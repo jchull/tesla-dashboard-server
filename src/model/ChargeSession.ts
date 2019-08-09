@@ -3,8 +3,8 @@ import {IChargeState} from './ChargeState';
 
 export interface IChargeSession extends Document {
   id_s: string,
-  start_date: Date,
-  end_date?: Date,
+  start_date: number,
+  end_date?: number,
   latitude?: number,
   longitude?: number,
   charge_current_request_max?: number,
@@ -36,8 +36,8 @@ export interface IChargeSession extends Document {
 
 const ChargeSessionSchema: Schema = new Schema({
   id_s: {type: String, required: true},
-  start_date: {type: Date, required: true},
-  end_date: {type: Date},
+  start_date: {type: Number, required: true},
+  end_date: {type: Number},
   latitude: {type: Number},
   longitude: {type: Number},
   charge_current_request_max: {type: Number},

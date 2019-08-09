@@ -3,7 +3,7 @@ import {IDriveSession} from './DriveSession';
 
 export interface IDriveState extends Document {
   id_s: string,
-  gps_as_of: Date,
+  gps_as_of: number,
   heading: number,
   latitude: number,
   longitude: number,
@@ -11,7 +11,7 @@ export interface IDriveState extends Document {
   shift_state: string,
   speed: number,
   odometer: number,
-  timestamp: Date,
+  timestamp: number,
   battery_heater: boolean,
   battery_level: number,
   est_battery_range: number,
@@ -41,7 +41,7 @@ export interface IDriveState extends Document {
 
 const DriveStateSchema: Schema = new Schema({
   id_s: {type: String, required: true},
-  gps_as_of: {type: Date},
+  gps_as_of: {type: Number},
   heading: {type: Number},
   latitude: {type: Number},
   longitude: {type: Number},
@@ -49,7 +49,7 @@ const DriveStateSchema: Schema = new Schema({
   shift_state: {type: String},
   speed: {type: Number},
   odometer: {type: Number},
-  timestamp: {type: Date},
+  timestamp: {type: Number},
   battery_heater: {type: Boolean},
   battery_level: {type: Number},
   est_battery_range: {type: Number},

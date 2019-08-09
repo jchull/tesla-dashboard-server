@@ -65,6 +65,10 @@ const routes = [
       }
     }
   },
+
+
+
+    ///// DRIVING
   {
     path: '/vehicle/:id_s/drive',
     method: 'get',
@@ -98,6 +102,21 @@ const routes = [
     }
   },
   {
+    path: '/vehicle/:id_s/drive/:drive_id',
+    method: 'delete',
+    handler: async (req: Request, res: Response) => {
+      await DriveSession.findOneAndDelete({_id: req.params.drive_id});
+      res.status(200)
+         .send();
+    }
+  },
+
+
+
+
+
+    /////// CHARGING
+  {
     path: '/vehicle/:id_s/charge',
     method: 'get',
     handler: async (req: Request, res: Response) => {
@@ -127,6 +146,15 @@ const routes = [
         res.status(500)
            .send();
       }
+    }
+  },
+  {
+    path: '/vehicle/:id_s/charge/:charge_id',
+    method: 'delete',
+    handler: async (req: Request, res: Response) => {
+      await ChargeSession.findOneAndDelete({_id: req.params.charge_id});
+      res.status(200)
+         .send();
     }
   }
 ];
