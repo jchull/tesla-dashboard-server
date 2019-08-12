@@ -32,26 +32,23 @@ export class DataSyncService {
       const vehicleStatus = this.findVehicleState(vehicleData);
       console.log(`${vehicleData.display_name} is currently ${vehicleStatus}`);
 
-      const vehicle = <IVehicle> await Vehicle.findOne({id_s});
-      if(vehicle){
-        vehicle.odometer = vehicleData.vehicle_state.odometer;
-        vehicle.display_name = vehicleData.display_name;
-        vehicle.api_version = vehicleData.api_version;
-        vehicle.color = vehicleData.vehicle_config.exterior_color;
-        vehicle.car_type = vehicleData.vehicle_config.car_type;
-        vehicle.timestamp = vehicleData.vehicle_state.timestamp;
-        vehicle.battery_level = vehicleData.charge_state.battery_level;
-        vehicle.state = vehicleStatus;
-        await Vehicle.updateOne({id_s}, vehicle);
-      }
-
+      const vehicle = <IVehicle>await Vehicle.findOne({id_s});
+      vehicle.odometer = vehicleData.vehicle_state.odometer;
+      vehicle.display_name = vehicleData.display_name;
+      vehicle.api_version = vehicleData.api_version;
+      vehicle.color = vehicleData.vehicle_config.exterior_color;
+      vehicle.car_type = vehicleData.vehicle_config.car_type;
+      vehicle.timestamp = vehicleData.vehicle_state.timestamp;
+      vehicle.battery_level = vehicleData.charge_state.battery_level;
+      vehicle.state = vehicleStatus;
+      await Vehicle.updateOne({id_s}, vehicle);
 
       if (this.isCharging(vehicleData)) {
-        // If this vehicle has a ChargeSession updated in the last 5 minutes, consider it the same charge
+        // If this vehicle has a ChargeSession updated in the last 15 minutes, consider it the same charge
         let [activeChargingSession] = await ChargeSession.find({
                                                            id_s,
                                                            end_date: {
-                                                             $gte: new Date(vehicleData.charge_state.timestamp - (60 * 5 * 1000))
+                                                             $gte: new Date(vehicleData.charge_state.timestamp - (60 * 15 * 1000))
                                                            }
                                                          })
                                                          .sort({$natural: -1})
@@ -67,15 +64,14 @@ export class DataSyncService {
           console.log(`*** Started new charging session at ${vehicleData.charge_state.battery_level}% ***`);
         }
 
-        // TODO: additional filtering of data which is unchanged
         this.appendChargeState(activeChargingSession, vehicleData);
 
       } else if (this.isDriving(vehicleData)) {
-        // If this vehicle has an a DriveSession updated in the last 5 minutes, consider it the same drive
+        // If this vehicle has an a DriveSession updated in the last 15 minutes, consider it the same drive
         let [activeDrivingSession] = await DriveSession.find({
                                                          id_s,
                                                          end_date: {
-                                                           $gte: new Date(vehicleData.drive_state.timestamp - (60 * 5 * 1000))
+                                                           $gte: new Date(vehicleData.drive_state.timestamp - (60 * 15 * 1000))
                                                          }
                                                        })
                                                        .sort({$natural: -1})
@@ -89,7 +85,6 @@ export class DataSyncService {
           console.log(`*** Started new driving session at ${vehicleData.vehicle_state.odometer} miles ***`);
         }
 
-        // TODO: additional filtering, only append if different than last state
         this.appendDriveState(activeDrivingSession, vehicleData);
       } else {
         console.log('state discarded');
@@ -100,9 +95,7 @@ export class DataSyncService {
   private updateVehicles(vehicleList: Array<IVehicle>): void {
     vehicleList.forEach(async vehicle => {
       const exists = await Vehicle.exists({id_s: vehicle.id_s});
-      if (exists) {
-        await Vehicle.updateOne({id_s: vehicle.id_s}, vehicle);
-      } else {
+      if (!exists) {
         await Vehicle.create(vehicle);
       }
       const handler = this.getUpdateHandler(vehicle.id_s);
@@ -128,7 +121,7 @@ export class DataSyncService {
   }
 
   private async appendChargeState(session: IChargeSession, vehicleData: IVehicleData): Promise<any> {
-    if(!session.last || this.hasChanges(session.last, vehicleData)) {
+    if (!session.last || this.hasChanges(session.last, vehicleData)) {
       const id_s = vehicleData.id_s;
 
       const state = <IChargeState>await ChargeState.create({
@@ -208,7 +201,7 @@ export class DataSyncService {
 
   private async appendDriveState(session: IDriveSession, vehicleData: IVehicleData): Promise<any> {
     const id_s = vehicleData.id_s;
-    const state = <IDriveState> await DriveState.create({
+    const state = <IDriveState>await DriveState.create({
       id_s,
       gps_as_of: vehicleData.drive_state.gps_as_of,
       heading: vehicleData.drive_state.heading,
@@ -252,8 +245,8 @@ export class DataSyncService {
     session.end_date = session.last.timestamp;
     session.distance = session.last.odometer - session.first.odometer;
 
-    const vehicle = <IVehicle> await Vehicle.findOne({id_s});
-    if(vehicle){
+    const vehicle = <IVehicle>await Vehicle.findOne({id_s});
+    if (vehicle) {
       vehicle.odometer = state.odometer;
       vehicle.display_name = vehicleData.display_name;
       vehicle.api_version = vehicleData.api_version;
@@ -276,13 +269,13 @@ export class DataSyncService {
   }
 
   private findVehicleState(vehicleData: IVehicleData): string {
-    if(vehicleData.drive_state.shift_state){
+    if (vehicleData.drive_state.shift_state) {
       return 'Driving';
     }
-    if(vehicleData.charge_state.charging_state && vehicleData.charge_state.charging_state !== 'Disconnected'){
+    if (vehicleData.charge_state.charging_state && vehicleData.charge_state.charging_state !== 'Disconnected') {
       return vehicleData.charge_state.charging_state;
     }
-    return 'Parked'
+    return 'Parked';
   }
 }
 
