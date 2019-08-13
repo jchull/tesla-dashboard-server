@@ -101,4 +101,26 @@ export class TeslaOwnerService {
                      }
                    });
   }
+
+  getNearbyChargers(id: String) {
+    return this.checkToken()
+               .then(() => axios.get(`${this.endpoint}/api/1/vehicles/${id}/nearby_charging_sites`, {
+                 headers: {
+                   'User-Agent': 'coderado-tesla-sync',
+                   'Authorization': `Bearer ${this.teslaAccount.access_token}`
+                 }
+               }))
+               .then((nearby_charging_sites) => {
+                     return nearby_charging_sites && nearby_charging_sites.data && nearby_charging_sites.data.response;
+                   },
+                   (err) => {
+                     const statusCode = err.response.status;
+                     switch (statusCode) {
+                 // TODO: handle response codes?
+                       default:
+                         console.log(`Got response ${statusCode} and it is not handled yet`);
+                         console.log(err);
+                     }
+                   });
+  }
 }

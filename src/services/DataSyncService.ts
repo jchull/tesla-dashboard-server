@@ -54,6 +54,11 @@ export class DataSyncService {
                                                          .sort({$natural: -1})
                                                          .limit(1) as [IChargeSession];
         if (!activeChargingSession) {
+          // TODO: when creating a new charge session, look for nearby charging sites or < .1 mile?
+          const nearby_charging_sites = await this.ownerService.getNearbyChargers(id_s);
+          console.log(nearby_charging_sites);
+
+
           activeChargingSession = <IChargeSession>await ChargeSession.create({
             id_s,
             start_date: vehicleData.charge_state.timestamp,
