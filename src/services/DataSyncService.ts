@@ -2,11 +2,15 @@ import {TeslaOwnerService} from './TeslaOwnerService';
 import {IConfiguration} from '../model/Configuration';
 import {ITeslaAccount} from '../model/TeslaAccount';
 import Vehicle, {IVehicle} from '../model/tesla/Vehicle';
-import ChargeState, {IChargeState} from '../model/ChargeState';
-import DriveState, {IDriveState} from '../model/DriveState';
-import ChargeSession, {IChargeSession} from '../model/ChargeSession';
-import DriveSession, {IDriveSession} from '../model/DriveSession';
+import {IChargeState} from '../model/types/ChargeState';
+import  {IDriveState} from '../model/types/DriveState';
+import  {IChargeSession} from '../model/types/ChargeSession';
+import  {IDriveSession} from '../model/types/DriveSession';
 import {IVehicleData} from '../model/tesla/VehicleData';
+import ChargeSession from '../model/schema/ChargeSession';
+import DriveSession from '../model/schema/DriveSession';
+import ChargeState from '../model/schema/ChargeState';
+import DriveState from '../model/schema/DriveState';
 
 export class DataSyncService {
   private config: IConfiguration;

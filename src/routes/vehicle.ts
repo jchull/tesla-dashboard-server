@@ -1,11 +1,12 @@
 import {Request, Response} from 'express';
 import Vehicle from '../model/tesla/Vehicle';
-import ChargeState from '../model/ChargeState';
-import DriveState from '../model/DriveState';
+import ChargeState from '../model/schema/ChargeState';
+import DriveState from '../model/schema/DriveState';
 import GuiSettings from '../model/tesla/GuiSettings';
 import VehicleConfig from '../model/tesla/VehicleConfig';
-import ChargeSession from '../model/ChargeSession';
-import DriveSession from '../model/DriveSession';
+import ChargeSession from '../model/schema/ChargeSession';
+import DriveSession from '../model/schema/DriveSession';
+import {IVehicleSession} from '../model/types/VehicleSession';
 
 const routes = [
   {
@@ -67,8 +68,36 @@ const routes = [
   },
 
 
+  ///// Sessions (Drive+Charge)
+  {
+    path: '/vehicle/:id_s/session',
+    method: 'get',
+    handler: async (req: Request, res: Response) => {
+      const limit = req.query.limit && Number(req.query.limit) || 1;
+      const driveSessions = await DriveSession.find({id_s: req.params.id_s})
+                                              .sort({$natural: -1})
+                                              .limit(limit)
+                                              .populate(['first', 'last']);
+      const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
+                                                .sort({$natural: -1})
+                                                .limit(limit)
+                                                .populate(['first', 'last']);
+      const sessions = driveSessions.concat(chargeSessions)
+                                    // @ts-ignore
+                                    .sort((a: IVehicleSession, b: IVehicleSession) => b.start_date - a.start_date)// reverse sort
+                                    .slice(0, limit);
+      if (sessions.length) {
+        res.status(200)
+           .json(sessions);
+      } else {
+        res.status(500)
+           .send();
+      }
+    }
+  },
 
-    ///// DRIVING
+
+  ///// DRIVING
   {
     path: '/vehicle/:id_s/drive',
     method: 'get',
@@ -112,10 +141,7 @@ const routes = [
   },
 
 
-
-
-
-    /////// CHARGING
+  /////// CHARGING
   {
     path: '/vehicle/:id_s/charge',
     method: 'get',
