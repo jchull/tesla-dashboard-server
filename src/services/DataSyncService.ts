@@ -44,6 +44,7 @@ export class DataSyncService {
       vehicle.car_type = vehicleData.vehicle_config.car_type;
       vehicle.timestamp = vehicleData.vehicle_state.timestamp;
       vehicle.battery_level = vehicleData.charge_state.battery_level;
+      vehicle.battery_range = vehicleData.charge_state.battery_range;
       vehicle.state = vehicleStatus;
       await Vehicle.updateOne({id_s}, vehicle);
 

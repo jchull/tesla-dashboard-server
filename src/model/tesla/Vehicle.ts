@@ -19,6 +19,7 @@ export interface IVehicle extends Document {
   timestamp: number;
   car_type: string;
   battery_level: number;
+  battery_range: number;
   state: string;
 }
 
@@ -35,7 +36,8 @@ const VehicleSchema: Schema = new Schema({
   timestamp: {type: Number, required: false},
   car_type: {type: String, required: false},
   battery_level: {type: Number},
-  state: {type: String}
+  state: {type: String},
+  battery_range: {type: Number}
 
 });
 
