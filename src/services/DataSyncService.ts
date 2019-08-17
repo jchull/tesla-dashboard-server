@@ -3,9 +3,9 @@ import {IConfiguration} from '../model/Configuration';
 import {ITeslaAccount} from '../model/TeslaAccount';
 import Vehicle, {IVehicle} from '../model/tesla/Vehicle';
 import {IChargeState} from '../model/types/ChargeState';
-import  {IDriveState} from '../model/types/DriveState';
-import  {IChargeSession} from '../model/types/ChargeSession';
-import  {IDriveSession} from '../model/types/DriveSession';
+import {IDriveState} from '../model/types/DriveState';
+import {IChargeSession} from '../model/types/ChargeSession';
+import {IDriveSession} from '../model/types/DriveSession';
 import {IVehicleData} from '../model/tesla/VehicleData';
 import ChargeSession from '../model/schema/ChargeSession';
 import DriveSession from '../model/schema/DriveSession';
@@ -45,6 +45,7 @@ export class DataSyncService {
       vehicle.timestamp = vehicleData.vehicle_state.timestamp;
       vehicle.battery_level = vehicleData.charge_state.battery_level;
       vehicle.battery_range = vehicleData.charge_state.battery_range;
+      vehicle.charging_state = vehicleData.charge_state.charging_state || 'Disconnected';
       vehicle.state = vehicleStatus;
       await Vehicle.updateOne({id_s}, vehicle);
 

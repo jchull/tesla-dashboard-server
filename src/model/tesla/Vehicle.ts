@@ -21,6 +21,8 @@ export interface IVehicle extends Document {
   battery_level: number;
   battery_range: number;
   state: string;
+  charging_state: string;
+
 }
 
 
@@ -37,7 +39,8 @@ const VehicleSchema: Schema = new Schema({
   car_type: {type: String, required: false},
   battery_level: {type: Number},
   state: {type: String},
-  battery_range: {type: Number}
+  battery_range: {type: Number},
+  charging_state: {type: String},
 
 });
 
