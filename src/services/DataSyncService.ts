@@ -46,6 +46,8 @@ export class DataSyncService {
       vehicle.battery_level = vehicleData.charge_state.battery_level;
       vehicle.battery_range = vehicleData.charge_state.battery_range;
       vehicle.charging_state = vehicleData.charge_state.charging_state || 'Disconnected';
+      vehicle.time_to_full_charge = vehicleData.charge_state.time_to_full_charge;
+      vehicle.charge_limit_soc = vehicleData.charge_state.charge_limit_soc;
       vehicle.state = vehicleStatus;
       await Vehicle.updateOne({id_s}, vehicle);
 
@@ -225,6 +227,7 @@ export class DataSyncService {
       timestamp: vehicleData.drive_state.timestamp,
       battery_heater: vehicleData.climate_state.battery_heater,
       battery_level: vehicleData.charge_state.battery_level,
+      battery_range: vehicleData.charge_state.battery_range,
       est_battery_range: vehicleData.charge_state.est_battery_range,
       ideal_battery_range: vehicleData.charge_state.ideal_battery_range,
       usable_battery_level: vehicleData.charge_state.usable_battery_level,

@@ -14,6 +14,7 @@ const DriveStateSchema: Schema = new Schema({
   timestamp: {type: Number},
   battery_heater: {type: Boolean},
   battery_level: {type: Number},
+  battery_range: {type: Number},
   est_battery_range: {type: Number},
   ideal_battery_range: {type: Number},
   usable_battery_level: {type: Number},
