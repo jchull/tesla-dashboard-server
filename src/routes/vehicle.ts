@@ -7,6 +7,8 @@ import VehicleConfig from '../model/tesla/VehicleConfig';
 import ChargeSession from '../model/schema/ChargeSession';
 import DriveSession from '../model/schema/DriveSession';
 import {IVehicleSession} from '../model/types/VehicleSession';
+import {IDriveSession} from '../model/types/DriveSession';
+import {IChargeSession} from '../model/types/ChargeSession';
 
 const routes = [
   {
@@ -93,6 +95,51 @@ const routes = [
         res.status(500)
            .send();
       }
+    }
+  },
+
+  {
+    path: '/vehicle/:id_s/session/:_id/tag/:tag',
+    method: 'post',
+    handler: async (req: Request, res: Response) => {
+      const {_id, tag} = req.params;
+      const driveSession = <IDriveSession> await DriveSession.findOne({_id});
+      if(driveSession && !driveSession.tags.includes(tag)){
+        driveSession.tags.push(tag);
+        await DriveSession.updateOne({_id}, driveSession);
+        res.status(200).json(driveSession.tags);
+      } else {
+        const chargeSession = <IChargeSession> await ChargeSession.findOne({_id});
+        if(chargeSession && !chargeSession.tags.includes(tag)){
+          chargeSession.tags.push(tag);
+          await ChargeSession.updateOne({_id}, chargeSession);
+          res.status(200).json(chargeSession.tags);
+        }
+      }
+      res.status(500)
+         .send();
+    }
+  },
+  {
+    path: '/vehicle/:id_s/session/:_id/tag/:tag',
+    method: 'delete',
+    handler: async (req: Request, res: Response) => {
+      const {_id, tag} = req.params;
+      const driveSession = <IDriveSession> await DriveSession.findOne({_id});
+      if(driveSession && driveSession.tags.includes(tag)){
+        driveSession.tags.splice(driveSession.tags.indexOf(tag), 1);
+        await DriveSession.updateOne({_id}, driveSession);
+        res.status(200).json(driveSession.tags);
+      } else {
+        const chargeSession = <IChargeSession> await ChargeSession.findOne({_id});
+        if(chargeSession && chargeSession.tags.includes(tag)){
+          chargeSession.tags.slice(chargeSession.tags.indexOf(tag), 1);
+          await ChargeSession.updateOne({_id}, chargeSession);
+          res.status(200).json(chargeSession.tags);
+        }
+      }
+      res.status(500)
+         .send();
     }
   },
 
