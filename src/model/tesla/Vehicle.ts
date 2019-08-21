@@ -24,7 +24,7 @@ export interface IVehicle extends Document {
   charging_state?: string;
   time_to_full_charge?: number;
   charge_limit_soc?: number;
-
+  last_session_id: string;
 }
 
 
@@ -44,8 +44,9 @@ const VehicleSchema: Schema = new Schema({
   battery_range: {type: Number},
   charging_state: {type: String},
   time_to_full_charge: {type: Number},
-  charge_limit_soc:{type: Number},
-  charge_limit_soc_min:{type: Number}
+  charge_limit_soc: {type: Number},
+  charge_limit_soc_min: {type: Number},
+  last_session_id: {type: String}
 
 });
 

@@ -37,19 +37,6 @@ export class DataSyncService {
       console.log(`${vehicleData.display_name} is currently ${vehicleStatus}`);
 
       const vehicle = <IVehicle>await Vehicle.findOne({id_s});
-      vehicle.odometer = vehicleData.vehicle_state.odometer;
-      vehicle.display_name = vehicleData.display_name;
-      vehicle.api_version = vehicleData.api_version;
-      vehicle.color = vehicleData.vehicle_config.exterior_color;
-      vehicle.car_type = vehicleData.vehicle_config.car_type;
-      vehicle.timestamp = vehicleData.vehicle_state.timestamp;
-      vehicle.battery_level = vehicleData.charge_state.battery_level;
-      vehicle.battery_range = vehicleData.charge_state.battery_range;
-      vehicle.charging_state = vehicleData.charge_state.charging_state || 'Disconnected';
-      vehicle.time_to_full_charge = vehicleData.charge_state.time_to_full_charge;
-      vehicle.charge_limit_soc = vehicleData.charge_state.charge_limit_soc;
-      vehicle.state = vehicleStatus;
-      await Vehicle.updateOne({id_s}, vehicle);
 
       if (this.isCharging(vehicleData)) {
         // If this vehicle has a ChargeSession updated in the last 15 minutes, consider it the same charge
@@ -62,6 +49,7 @@ export class DataSyncService {
                                                          .sort({$natural: -1})
                                                          .limit(1) as [IChargeSession];
         if (!activeChargingSession) {
+
           // TODO: when creating a new charge session, look for nearby charging sites or < .1 mile?
           const nearby_charging_sites = await this.ownerService.getNearbyChargers(id_s);
           console.log(nearby_charging_sites);
@@ -74,6 +62,10 @@ export class DataSyncService {
             latitude: vehicleData.drive_state.latitude,
             longitude: vehicleData.drive_state.longitude
           });
+
+          // TODO: when new charging session started, any cleanup to last session?
+          vehicle.last_session_id = activeChargingSession._id;
+
           console.log(`*** Started new charging session at ${vehicleData.charge_state.battery_level}% ***`);
         }
 
@@ -95,6 +87,8 @@ export class DataSyncService {
             start_date: vehicleData.drive_state.timestamp,
             end_date: vehicleData.drive_state.timestamp
           });
+          // TODO: cleanup of last session?
+          vehicle.last_session_id = activeDrivingSession._id;
           console.log(`*** Started new driving session at ${vehicleData.vehicle_state.odometer} miles ***`);
         }
 
@@ -102,6 +96,20 @@ export class DataSyncService {
       } else {
         console.log('state discarded');
       }
+
+      vehicle.odometer = vehicleData.vehicle_state.odometer;
+      vehicle.display_name = vehicleData.display_name;
+      vehicle.api_version = vehicleData.api_version;
+      vehicle.color = vehicleData.vehicle_config.exterior_color;
+      vehicle.car_type = vehicleData.vehicle_config.car_type;
+      vehicle.timestamp = vehicleData.vehicle_state.timestamp;
+      vehicle.battery_level = vehicleData.charge_state.battery_level;
+      vehicle.battery_range = vehicleData.charge_state.battery_range;
+      vehicle.charging_state = vehicleData.charge_state.charging_state || 'Disconnected';
+      vehicle.time_to_full_charge = vehicleData.charge_state.time_to_full_charge;
+      vehicle.charge_limit_soc = vehicleData.charge_state.charge_limit_soc;
+      vehicle.state = vehicleStatus;
+      return Vehicle.updateOne({id_s}, vehicle);
     }
   }
 
