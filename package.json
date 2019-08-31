@@ -22,7 +22,8 @@
     "express": "^4.17.1",
     "mongodb": "latest",
     "mongoose": "^5.6.8",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "tesla-dashboard-api": "latest"
   },
   "jest": {
     "verbose": true,
@@ -42,9 +43,6 @@
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/compression": "0.0.36",
-    "@types/cors": "^2.8.5",
-    "@types/express": "^4.17.0",
-    "@types/compression": "0.0.36",
     "@types/cookie-parser": "^1.4.1",
     "@types/cors": "^2.8.5",
     "@types/express": "^4.17.0",
@@ -53,10 +51,11 @@
     "@types/mongoose": "^5.5.11",
     "@types/morgan": "^1.7.36",
     "@types/node": "^12.6.9",
+    "eslint": "^6.3.0",
     "jest": "^24.8.0",
+    "pretty": "^2.0.0",
     "rimraf": "^2.6.3",
     "ts-jest": "^24.0.2",
-    "typescript": "^3.5.3",
-    "tesla-dashboard-api": "latest"
+    "typescript": "^3.5.3"
   }
 }
