@@ -1,6 +1,7 @@
 import {Request, Response} from 'express';
-import User from '../model/User';
-import TeslaAccount from '../model/TeslaAccount';
+import {User} from '../model/User';
+import {TeslaAccount} from '../model/TeslaAccount';
+import {IUserPreferences} from 'tesla-dashboard-api';
 
 const routes = [
   {
@@ -34,6 +35,14 @@ const routes = [
       const user = await User.update({username: userInfo.username}, userInfo);
       res.status(200)
          .json(user);
+    }
+  },
+  {
+    path: '/user/:username/prefs',
+    method: 'get',
+    handler: async (req: Request, res: Response) => {
+      const x = {} as IUserPreferences;
+      res.send('No users');
     }
   }
 ];

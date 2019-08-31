@@ -1,7 +1,6 @@
-import TeslaAccount, {ITeslaAccount} from '../model/TeslaAccount';
-
 import axios from 'axios';
-import {IVehicle} from '../model/tesla/Vehicle';
+import {TeslaAccount, VehicleType} from '../model';
+import {ITeslaAccount} from 'tesla-dashboard-api';
 
 export class TeslaOwnerService {
   endpoint: string;
@@ -61,7 +60,7 @@ export class TeslaOwnerService {
   }
 
 
-  getVehicles(): Promise<Array<IVehicle>> {
+  getVehicles(): Promise<Array<VehicleType>> {
     return this.checkToken()
                .then(() => axios.get(`${this.endpoint}/api/1/vehicles`, {
                  headers: {

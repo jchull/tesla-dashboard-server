@@ -1,11 +1,9 @@
 // This is a temporary way to start a polling instance for quick testing
 
-import {IConfiguration} from './model/Configuration';
 
 import {PersistenceService} from './services/PersistenceService';
 import {DataSyncService} from './services/DataSyncService';
-import User, {IUser} from './model/User';
-import TeslaAccount from './model/TeslaAccount';
+import {ConfigurationType, TeslaAccount, User, UserType} from './model';
 
 // TODO: get rid of this
 const username = process.argv[2];
@@ -25,12 +23,12 @@ if (!username) {
 const db = new PersistenceService(config.DB_CONN);
 db.connect()
   .then(() => db.getConfiguration())
-  .then((conf: IConfiguration) => {
+  .then((conf: ConfigurationType) => {
     TeslaAccount.count({});
     User.findOne({username})
         .populate('teslaAccounts')
         // @ts-ignore
-        .then((user: IUser) => {
+        .then((user: UserType) => {
           user.teslaAccounts.forEach(teslaAccount => {
             const server = new DataSyncService(conf, teslaAccount);
             server.beginPolling(60000);

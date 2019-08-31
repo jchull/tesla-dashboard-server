@@ -1,14 +1,6 @@
 import {Request, Response} from 'express';
-import Vehicle from '../model/tesla/Vehicle';
-import ChargeState from '../model/schema/ChargeState';
-import DriveState from '../model/schema/DriveState';
-import GuiSettings from '../model/tesla/GuiSettings';
-import VehicleConfig from '../model/tesla/VehicleConfig';
-import ChargeSession from '../model/schema/ChargeSession';
-import DriveSession from '../model/schema/DriveSession';
-import {IVehicleSession} from '../model/types/VehicleSession';
-import {IDriveSession} from '../model/types/DriveSession';
-import {IChargeSession} from '../model/types/ChargeSession';
+import {ChargeSession, ChargeState, DriveSession, DriveState, GuiSettings, Vehicle, VehicleConfig,
+  ChargeSessionType, ChargeStateType, DriveSessionType, DriveStateType, GuiSettingsType, VehicleType, VehicleConfigType} from '../model';
 
 const routes = [
   {
@@ -103,17 +95,19 @@ const routes = [
     method: 'post',
     handler: async (req: Request, res: Response) => {
       const {_id, tag} = req.params;
-      const driveSession = <IDriveSession> await DriveSession.findOne({_id});
-      if(driveSession && !driveSession.tags.includes(tag)){
+      const driveSession = <DriveSessionType>await DriveSession.findOne({_id});
+      if (driveSession && !driveSession.tags.includes(tag)) {
         driveSession.tags.push(tag);
         await DriveSession.updateOne({_id}, driveSession);
-        res.status(200).json(driveSession.tags);
+        res.status(200)
+           .json(driveSession.tags);
       } else {
-        const chargeSession = <IChargeSession> await ChargeSession.findOne({_id});
-        if(chargeSession && !chargeSession.tags.includes(tag)){
+        const chargeSession = <ChargeSessionType>await ChargeSession.findOne({_id});
+        if (chargeSession && !chargeSession.tags.includes(tag)) {
           chargeSession.tags.push(tag);
           await ChargeSession.updateOne({_id}, chargeSession);
-          res.status(200).json(chargeSession.tags);
+          res.status(200)
+             .json(chargeSession.tags);
         }
       }
       res.status(500)
@@ -125,17 +119,19 @@ const routes = [
     method: 'delete',
     handler: async (req: Request, res: Response) => {
       const {_id, tag} = req.params;
-      const driveSession = <IDriveSession> await DriveSession.findOne({_id});
-      if(driveSession && driveSession.tags.includes(tag)){
+      const driveSession = <DriveSessionType>await DriveSession.findOne({_id});
+      if (driveSession && driveSession.tags.includes(tag)) {
         driveSession.tags.splice(driveSession.tags.indexOf(tag), 1);
         await DriveSession.updateOne({_id}, driveSession);
-        res.status(200).json(driveSession.tags);
+        res.status(200)
+           .json(driveSession.tags);
       } else {
-        const chargeSession = <IChargeSession> await ChargeSession.findOne({_id});
-        if(chargeSession && chargeSession.tags.includes(tag)){
+        const chargeSession = <ChargeSessionType>await ChargeSession.findOne({_id});
+        if (chargeSession && chargeSession.tags.includes(tag)) {
           chargeSession.tags.slice(chargeSession.tags.indexOf(tag), 1);
           await ChargeSession.updateOne({_id}, chargeSession);
-          res.status(200).json(chargeSession.tags);
+          res.status(200)
+             .json(chargeSession.tags);
         }
       }
       res.status(500)
@@ -226,6 +222,33 @@ const routes = [
     method: 'delete',
     handler: async (req: Request, res: Response) => {
       await ChargeSession.findOneAndDelete({_id: req.params.charge_id});
+      res.status(200)
+         .send();
+    }
+  },
+  {
+    path: '/vehicle/:id_s/session/merge',
+    method: 'post',
+    handler: async (req: Request, res: Response) => {
+      const sessionIds = req.body.sessionIds as Array<string>;
+      // get all the sessions in sessionIds
+      // delete all states that are not a first or last for one of the sessions
+      // update the sessionIds for all the old first/last to point to new sessionId
+      // update the last to point to the new last sessionId
+      // delete old sessions?
+
+
+      res.status(200)
+         .send();
+    }
+  },
+  {
+    path: '/vehicle/:id_s/session/:sessionId/archive',
+    method: 'post',
+    handler: async (req: Request, res: Response) => {
+      // get the session
+      // delete all states that are not a first or last for that session
+
       res.status(200)
          .send();
     }

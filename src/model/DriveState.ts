@@ -1,27 +1,25 @@
-import {model, Schema} from 'mongoose';
+import {Document, model, Schema} from 'mongoose';
+import {IDriveState} from 'tesla-dashboard-api';
 
 
-const ChargeStateSchema: Schema = new Schema({
+const DriveStateSchema: Schema = new Schema({
   id_s: {type: String, required: true},
-  vehicle_id: {type: Number},
-  battery_heater_on: {type: Boolean},
+  is_key_state: {type: Boolean},
+  gps_as_of: {type: Number},
+  heading: {type: Number},
+  latitude: {type: Number},
+  longitude: {type: Number},
+  power: {type: Number},
+  shift_state: {type: String},
+  speed: {type: Number},
+  odometer: {type: Number},
+  timestamp: {type: Number},
+  battery_heater: {type: Boolean},
   battery_level: {type: Number},
   battery_range: {type: Number},
-  charge_current_request: {type: Number},
-  charge_energy_added: {type: Number},
-  charge_miles_added_ideal: {type: Number},
-  charge_miles_added_rated: {type: Number},
-  charge_port_door_open: {type: Boolean},
-  charge_port_latch: {type: String},
-  charge_rate: {type: Number},
-  charger_actual_current: {type: Number},
-  charger_power: {type: Number},
-  charger_voltage: {type: Number},
-  charging_state: {type: String},
   est_battery_range: {type: Number},
   ideal_battery_range: {type: Number},
-  time_to_full_charge: {type: Number},
-  timestamp: {type: Number},
+  usable_battery_level: {type: Number},
   driver_temp_setting: {type: Number},
   fan_status: {type: Number},
   inside_temp: {type: Number},
@@ -39,11 +37,11 @@ const ChargeStateSchema: Schema = new Schema({
   seat_heater_right: {type: Number},
   side_mirror_heaters: {type: Boolean},
   smart_preconditioning: {type: Boolean},
-  is_user_present: {type: Boolean},
+  wiper_blade_heater: {type: Boolean},
 
-  chargeSession: {type: Schema.Types.ObjectId, ref: 'ChargeSession'}
-
+  driveSession: {type: Schema.Types.ObjectId, ref: 'DriveSession'}
 });
 
-export default model('ChargeState', ChargeStateSchema);
+export const DriveState = model('DriveState', DriveStateSchema);
+export type DriveStateType = IDriveState & Document;
 

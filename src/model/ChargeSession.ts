@@ -1,10 +1,11 @@
-import {model, Schema} from 'mongoose';
-
+import {model, Document, Schema} from 'mongoose';
+import {IChargeSession} from 'tesla-dashboard-api';
 
 const ChargeSessionSchema: Schema = new Schema({
   id_s: {type: String, required: true},
   start_date: {type: Number, required: true},
   end_date: {type: Number},
+  archived: {type: Boolean},
   latitude: {type: Number},
   longitude: {type: Number},
   charge_current_request_max: {type: Number},
@@ -33,5 +34,5 @@ const ChargeSessionSchema: Schema = new Schema({
   last: {type: Schema.Types.ObjectId, ref: 'ChargeState'}
 });
 
-export default model('ChargeSession', ChargeSessionSchema);
-
+export const ChargeSession = model('ChargeSession', ChargeSessionSchema);
+export type ChargeSessionType = IChargeSession & Document;

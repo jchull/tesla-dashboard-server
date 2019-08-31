@@ -1,14 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-
-export interface ITeslaAccount extends Document {
-  token_created_at?: number;
-  token_expires_in?: number;
-  refresh_token?: string;
-  access_token?: string;
-  email: string;
-  // Does not get persisted
-  password: string;
-}
+import {ITeslaAccount} from 'tesla-dashboard-api';
 
 
 const TeslaAccountSchema: Schema = new Schema({
@@ -19,6 +10,7 @@ const TeslaAccountSchema: Schema = new Schema({
   access_token: {type: String, required: false}
 });
 
-export default model('TeslaAccount', TeslaAccountSchema);
+export const TeslaAccount = model('TeslaAccount', TeslaAccountSchema);
+export type TeslaAccountType = ITeslaAccount & Document;
 
 

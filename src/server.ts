@@ -1,4 +1,4 @@
-import {IConfiguration} from './model/Configuration';
+import {ConfigurationType} from './model';
 import {createServer} from 'http';
 // @ts-ignore
 import express from 'express';
@@ -23,7 +23,7 @@ applyRoutes(routes, router);
 const db = new PersistenceService(config.DB_CONN);
 db.connect()
   .then(() => db.getConfiguration())
-  .then((conf: IConfiguration) => {
+  .then((conf: ConfigurationType) => {
     const server = createServer(router);
     server.listen(conf.apiPort, () =>
         console.log(`Server is running at http://localhost:${conf.apiPort} ...`));

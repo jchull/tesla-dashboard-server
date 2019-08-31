@@ -1,22 +1,24 @@
 import {TeslaOwnerService} from './TeslaOwnerService';
-import {IConfiguration} from '../model/Configuration';
-import {ITeslaAccount} from '../model/TeslaAccount';
-import Vehicle, {IVehicle} from '../model/tesla/Vehicle';
-import {IChargeState} from '../model/types/ChargeState';
-import {IDriveState} from '../model/types/DriveState';
-import {IChargeSession} from '../model/types/ChargeSession';
-import {IDriveSession} from '../model/types/DriveSession';
-import {IVehicleData} from '../model/tesla/VehicleData';
-import ChargeSession from '../model/schema/ChargeSession';
-import DriveSession from '../model/schema/DriveSession';
-import ChargeState from '../model/schema/ChargeState';
-import DriveState from '../model/schema/DriveState';
+import {
+  ChargeSession,
+  ChargeSessionType,
+  ChargeState,
+  ChargeStateType,
+  ConfigurationType,
+  DriveSession,
+  DriveSessionType,
+  DriveState,
+  DriveStateType,
+  Vehicle,
+  VehicleType
+} from '../model';
+import {IChargeState, ITeslaAccount, IVehicle, IVehicleData} from 'tesla-dashboard-api';
 
 export class DataSyncService {
-  private config: IConfiguration;
+  private config: ConfigurationType;
   private ownerService: TeslaOwnerService;
 
-  constructor(config: IConfiguration, teslaAccount: ITeslaAccount) {
+  constructor(config: ConfigurationType, teslaAccount: ITeslaAccount) {
     this.config = config;
     this.ownerService = new TeslaOwnerService(config.ownerBaseUrl, config.teslaClientKey, config.teslaClientSecret, teslaAccount);
   }
@@ -26,7 +28,7 @@ export class DataSyncService {
     console.log(`Polling started every ${pollingInterval / 1000} seconds...`);
     this.ownerService.checkToken()
         .then(() => this.ownerService.getVehicles())
-        .then((vehicleList: Array<IVehicle>) => this.updateVehicles(vehicleList));
+        .then((vehicleList: Array<VehicleType>) => this.updateVehicles(vehicleList));
 
   };
 
@@ -36,7 +38,7 @@ export class DataSyncService {
       const vehicleStatus = this.findVehicleState(vehicleData);
       console.log(`${vehicleData.display_name} is currently ${vehicleStatus}`);
 
-      const vehicle = <IVehicle>await Vehicle.findOne({id_s});
+      const vehicle = <VehicleType>await Vehicle.findOne({id_s});
 
       if (this.isCharging(vehicleData)) {
         // If this vehicle has a ChargeSession updated in the last 15 minutes, consider it the same charge
@@ -47,7 +49,7 @@ export class DataSyncService {
                                                            }
                                                          })
                                                          .sort({$natural: -1})
-                                                         .limit(1) as [IChargeSession];
+                                                         .limit(1) as Array<ChargeSessionType>;
         if (!activeChargingSession) {
 
           // TODO: when creating a new charge session, look for nearby charging sites or < .1 mile?
@@ -55,7 +57,7 @@ export class DataSyncService {
           console.log(nearby_charging_sites);
 
 
-          activeChargingSession = <IChargeSession>await ChargeSession.create({
+          activeChargingSession = <ChargeSessionType>await ChargeSession.create({
             id_s,
             start_date: vehicleData.charge_state.timestamp,
             end_date: vehicleData.charge_state.timestamp,
@@ -80,9 +82,9 @@ export class DataSyncService {
                                                          }
                                                        })
                                                        .sort({$natural: -1})
-                                                       .limit(1) as [IDriveSession];
+                                                       .limit(1) as Array<DriveSessionType>;
         if (!activeDrivingSession) {
-          activeDrivingSession = <IDriveSession>await DriveSession.create({
+          activeDrivingSession = <DriveSessionType>await DriveSession.create({
             id_s,
             start_date: vehicleData.drive_state.timestamp,
             end_date: vehicleData.drive_state.timestamp
@@ -141,11 +143,11 @@ export class DataSyncService {
         existing.charger_actual_current !== incoming.charge_state.charger_actual_current;
   }
 
-  private async appendChargeState(session: IChargeSession, vehicleData: IVehicleData): Promise<any> {
+  private async appendChargeState(session: ChargeSessionType, vehicleData: IVehicleData): Promise<any> {
     if (!session.last || this.hasChanges(session.last, vehicleData)) {
       const id_s = vehicleData.id_s;
 
-      const state = <IChargeState>await ChargeState.create({
+      const state = <ChargeStateType>await ChargeState.create({
         id_s,
         battery_heater_on: vehicleData.charge_state.battery_heater_on || false,
         battery_level: vehicleData.charge_state.battery_level,
@@ -220,9 +222,9 @@ export class DataSyncService {
     }
   }
 
-  private async appendDriveState(session: IDriveSession, vehicleData: IVehicleData): Promise<any> {
+  private async appendDriveState(session: DriveSessionType, vehicleData: IVehicleData): Promise<any> {
     const id_s = vehicleData.id_s;
-    const state = <IDriveState>await DriveState.create({
+    const state = <DriveStateType>await DriveState.create({
       id_s,
       gps_as_of: vehicleData.drive_state.gps_as_of,
       heading: vehicleData.drive_state.heading,
@@ -267,7 +269,7 @@ export class DataSyncService {
     session.end_date = session.last.timestamp;
     session.distance = session.last.odometer - session.first.odometer;
 
-    const vehicle = <IVehicle>await Vehicle.findOne({id_s});
+    const vehicle = <VehicleType>await Vehicle.findOne({id_s});
     if (vehicle) {
       vehicle.odometer = state.odometer;
       vehicle.display_name = vehicleData.display_name;

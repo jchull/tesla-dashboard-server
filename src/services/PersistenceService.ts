@@ -1,5 +1,6 @@
 import {connect} from 'mongoose';
-import Configuration, {IConfiguration} from '../model/Configuration';
+import {Configuration} from '../model';
+import {IConfiguration} from 'tesla-dashboard-api';
 
 export class PersistenceService {
   endpoint: string;
