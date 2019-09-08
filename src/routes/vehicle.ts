@@ -1,6 +1,15 @@
 import {Request, Response} from 'express';
-import {ChargeSession, ChargeState, DriveSession, DriveState, GuiSettings, Vehicle, VehicleConfig,
-  ChargeSessionType, ChargeStateType, DriveSessionType, DriveStateType, GuiSettingsType, VehicleType, VehicleConfigType} from '../model';
+import {
+  ChargeSession,
+  ChargeSessionType,
+  ChargeState,
+  DriveSession,
+  DriveSessionType,
+  DriveState,
+  GuiSettings,
+  Vehicle,
+  VehicleConfig
+} from '../model';
 
 const routes = [
   {
