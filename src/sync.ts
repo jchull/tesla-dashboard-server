@@ -7,7 +7,7 @@ import {ConfigurationType, TeslaAccount, User, UserType} from './model';
 
 // TODO: get rid of this
 const username = process.argv[2];
-const envfile = './config/.env';
+const envfile = './env/.env';
 require('dotenv')
     .config({path: envfile});
 const config = Object.assign({}, process.env);
@@ -29,10 +29,12 @@ db.connect()
         .populate('teslaAccounts')
         // @ts-ignore
         .then((user: UserType) => {
-          user.teslaAccounts.forEach(teslaAccount => {
-            const server = new DataSyncService(conf, teslaAccount);
-            server.beginPolling(60000);
-          });
+          if(user.teslaAccounts){
+            user.teslaAccounts.forEach(teslaAccount => {
+              const server = new DataSyncService(conf, teslaAccount);
+              server.beginPolling(60000);
+            });
+          }
         });
   });
 
