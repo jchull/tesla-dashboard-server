@@ -1,17 +1,14 @@
 import {ConfigurationType} from './model';
 import {createServer} from 'http';
 import fs from 'fs';
-// @ts-ignore
 import express from 'express';
 import {jwt} from './services/JwtService';
 
-const envfile = process.argv[2] || './env/.env';
-require('dotenv')
-    .config({path: envfile});
+import '../env/';
 const config = Object.assign({}, process.env);
 
-const privateKey = fs.readFileSync('./env/private.key', 'utf8');
-const publicKey = fs.readFileSync('./env/public.key', 'utf8');
+const privateKey = fs.readFileSync('./env/key.pem', 'utf8');
+const publicKey = fs.readFileSync('./env/key.pub', 'utf8');
 
 jwt({publicKey, privateKey, ttl: 1000 * 60 * 60 * 24});
 

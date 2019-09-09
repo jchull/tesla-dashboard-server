@@ -3,3 +3,6 @@
 /node_modules/
 dockerstuff.txt
 temp.json
+/env/key
+/env/key.pem
+/env/key.pub

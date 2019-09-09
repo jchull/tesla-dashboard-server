@@ -12,25 +12,28 @@ const whitelist = [
 
 export default (): (req: Request, res: Response, next: NextFunction) => Promise<any> => {
   return async function (req: Request, res: Response, next: NextFunction) {
-    whitelist.forEach(allowed => {
-      if (req.url.endsWith(allowed)) {
-        next();
-      }
-    });
+    res.header('Content-Type', 'application/json;charset=UTF-8');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept'
+    );
+    const whitelisted = whitelist.find(allowed => req.url.endsWith(allowed));
 
-
-    try {
-      const token = jwtService.decode(req.cookies[JWT_COOKIE_PROP]);
-      if (!token) {
-        throw Error('JWT not present in signed cookie.');
-      }
-      console.log(`Got TOKEN: ${token}`);
+    if (whitelisted) {
       next();
-    } catch (err) {
-      return res.status(UNAUTHORIZED)
-                .json({
-                  error: err.message
-                });
+    } else {
+      try {
+        const token = jwtService.decode(req.cookies[JWT_COOKIE_PROP]);
+        if (!token) {
+          throw Error('JWT not present in signed cookie.');
+        }
+      } catch (err) {
+        return res.status(UNAUTHORIZED)
+                  .json({
+                    error: err.message
+                  });
+      }
     }
   };
 };

@@ -148,7 +148,7 @@ const routes = [
         res.cookie(JWT_COOKIE_PROP, token, jwtService.cookieOptions);
         // Return
         return res.status(OK)
-                  .end();
+                  .json();
       } catch (err) {
         console.log(err.message, err);
         return res.status(BAD_REQUEST)

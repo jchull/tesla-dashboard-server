@@ -49,7 +49,9 @@ export class JwtService {
     });
 
     this.cookieOptions = Object.freeze({
-      secure: true
+      secure: false,
+      httpOnly: false,
+      withCredentials: true
     });
 
     this.serviceOptions = Object.freeze(options);
