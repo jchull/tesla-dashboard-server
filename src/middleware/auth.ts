@@ -28,6 +28,7 @@ export default (): (req: Request, res: Response, next: NextFunction) => Promise<
         if (!token) {
           throw Error('JWT not present in signed cookie.');
         }
+        next();
       } catch (err) {
         return res.status(UNAUTHORIZED)
                   .json({

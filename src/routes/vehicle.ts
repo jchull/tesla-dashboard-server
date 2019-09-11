@@ -16,7 +16,8 @@ const routes = [
     path: '/vehicle',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const vehicles = await Vehicle.find();
+      const vehicles = await Vehicle.find()
+                                    .sort({$natural: -1});
       res.status(200)
          .json(vehicles);
     }

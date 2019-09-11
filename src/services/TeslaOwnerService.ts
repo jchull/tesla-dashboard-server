@@ -52,7 +52,7 @@ export class TeslaOwnerService {
           this.teslaAccount.token_expires_in = res.data.expires_in;
           this.teslaAccount.token_created_at = Date.now();
           console.log('saving token');
-          return TeslaAccount.updateOne({_id: this.teslaAccount._id}, this.teslaAccount);
+          return TeslaAccount.updateOne({email: this.teslaAccount.email}, this.teslaAccount);
         })
         .catch((error: any) => {
           console.error(error);
