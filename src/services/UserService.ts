@@ -1,6 +1,7 @@
 import {User, UserType} from '../model';
 import {IUser, UserRoles, ITeslaAccount} from 'tesla-dashboard-api';
 import bcrypt from 'bcrypt';
+import {UserPreferences} from '../model/UserPreferences';
 
 
 export class UserService {
@@ -47,6 +48,7 @@ export class UserService {
   }
 
   async getPreferences(username: string){
+    const prefs = await UserPreferences.findOne({username})
 
   }
 

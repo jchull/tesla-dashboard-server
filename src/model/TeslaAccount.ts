@@ -3,6 +3,7 @@ import {ITeslaAccount} from 'tesla-dashboard-api';
 
 
 const TeslaAccountSchema: Schema = new Schema({
+  username: {type: String},
   email: {type: String, required: true},
   token_created_at: {type: Number, required: false},
   token_expires_in: {type: Number, required: false},

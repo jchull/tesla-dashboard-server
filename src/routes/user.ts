@@ -115,7 +115,7 @@ const routes = [
                       error: paramMissingError
                     });
         }
-        const user = await userService.create({username, email, password}) as UserType;
+        const user = await userService.create({username, email, password});
         return res.status(CREATED)
                   .json(user);
       } catch (err) {
