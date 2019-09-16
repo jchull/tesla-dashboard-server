@@ -1,33 +1,38 @@
 import {Request, Response} from 'express';
-import {User, UserType} from '../model';
-import {IUser, IUserPreferences, UserRoles} from 'tesla-dashboard-api';
+import {TeslaAccount, User, UserType} from '../model';
+import {IUserPreferences} from 'tesla-dashboard-api';
 import {BAD_REQUEST, CREATED, NOT_FOUND, OK, UNAUTHORIZED} from 'http-status-codes';
 import {ParamsDictionary} from 'express-serve-static-core';
-import bcrypt from 'bcrypt';
 import {jwt, JWT_COOKIE_PROP} from '../services/JwtService';
+import {UserService} from '../services/UserService';
+
 
 const jwtService = jwt();
+const userService = new UserService();
 
 const paramMissingError = 'Parameter missing';
 const loginFailedErr = 'Login failed';
 
-function sanitizeUser(user: IUser): IUser {
-  const {username, email, role} = user;
-  return {username, email, role};
-}
 
 const routes = [
   {
     path: '/user/:username',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const user = await User.findOne({username: req.params.username}) as UserType;
-      if (!user) {
-        return res.status(NOT_FOUND)
-                  .send();
+      const username = req.params.username;
+      if (!username) {
+        return res.status(BAD_REQUEST)
+                  .json({
+                    error: paramMissingError,
+                    message: 'Missing username URL Parameter'
+                  });
       }
-      res.status(OK)
-         .send(sanitizeUser(user));
+      // TODO: currentUser === username? for authorization
+      const user = await userService.get(username);
+      return user ? res.status(OK)
+                       .json(user) :
+          res.status(NOT_FOUND)
+             .end();
     }
   },
   {
@@ -47,7 +52,7 @@ const routes = [
         user.id = Number(user.id);
         await User.updateOne({id: user.id}, user);
         return res.status(OK)
-                  .send(sanitizeUser(user));
+                  .send(user);
       } catch (err) {
         console.log(err.message, err);
         return res.status(BAD_REQUEST)
@@ -85,11 +90,24 @@ const routes = [
   },
 
   {
+    path: '/user/:username/tesla-account',
+    method: 'get',
+    handler: async (req: Request, res: Response) => {
+      const accounts = await TeslaAccount.find();// TODO: fix accounts
+      if (!accounts) {
+        return res.status(NOT_FOUND)
+                  .send();
+      }
+      res.status(OK)
+         .json(accounts);
+    }
+  },
+
+  {
     path: '/signup',
     method: 'post',
     handler: async (req: Request, res: Response) => {
       try {
-        // Check parameters
         const {username, password, email} = req.body;
         if (!username || !password || !email) {
           return res.status(BAD_REQUEST)
@@ -97,13 +115,10 @@ const routes = [
                       error: paramMissingError
                     });
         }
-        const saltRounds = 10;
-        const hash = await bcrypt.hashSync(password, saltRounds);
-        const user = await User.create({username, email, pwdHash: hash, role: UserRoles.Standard}) as UserType;
+        const user = await userService.create({username, email, password}) as UserType;
         return res.status(CREATED)
-                  .json(sanitizeUser(user));
+                  .json(user);
       } catch (err) {
-        console.log(err.message, err);
         return res.status(BAD_REQUEST)
                   .json({
                     error: err.message
@@ -116,7 +131,6 @@ const routes = [
     method: 'post',
     handler: async (req: Request, res: Response) => {
       try {
-        // Check email and password present
         const {username, password} = req.body;
         if (!(username && password)) {
           return res.status(BAD_REQUEST)
@@ -124,8 +138,7 @@ const routes = [
                       error: paramMissingError
                     });
         }
-        // Fetch user
-        const user = await User.findOne({username}) as UserType;
+        const user = await userService.get(username);
         if (!user) {
           console.log(`failed login attempt for ${username}!`);
           return res.status(UNAUTHORIZED)
@@ -133,9 +146,7 @@ const routes = [
                       error: loginFailedErr
                     });
         }
-        // Check password
-        // @ts-ignore
-        const pwdPassed = bcrypt.compareSync(password, user.pwdHash);
+        const pwdPassed = userService.checkPassword(username, password);
         if (!pwdPassed) {
           console.log(`failed login attempt for ${username}!`);
           return res.status(UNAUTHORIZED)
@@ -143,12 +154,9 @@ const routes = [
                       error: loginFailedErr
                     });
         }
-        // Setup Cookie
-        const token = await jwtService.encode({username, password, subject: 'tesla-dashboard'});
-        res.cookie(JWT_COOKIE_PROP, token, jwtService.cookieOptions);
-        // Return
+        jwtService.cookie(req, res, user);
         return res.status(OK)
-                  .json();
+                  .end();
       } catch (err) {
         console.log(err.message, err);
         return res.status(BAD_REQUEST)
@@ -162,11 +170,9 @@ const routes = [
     path: '/logout',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      console.log('logout');
-      return res.status(BAD_REQUEST)
-                .json({
-                  error: 'Not yet implemented'
-                });
+      res.cookie(JWT_COOKIE_PROP, undefined, jwtService.cookieOptions);
+      return res.status(OK)
+                .end();
     }
 
   }

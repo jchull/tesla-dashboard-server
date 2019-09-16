@@ -1,5 +1,6 @@
 import jsonwebtoken, {SignOptions, VerifyOptions} from 'jsonwebtoken';
-import {CookieOptions, Request} from 'express';
+import {CookieOptions, Request, Response} from 'express';
+import {IUser} from 'tesla-dashboard-api';
 
 let jwtInstance: JwtService;
 
@@ -7,8 +8,8 @@ export const JWT_COOKIE_PROP = 'jwt';
 
 interface IClientData {
   username: string;
-  password: string;
-  subject: string;
+  role: number | undefined;
+  client: string;
 }
 
 interface IJwtServiceOptions {
@@ -59,7 +60,7 @@ export class JwtService {
   }
 
   encode(data: IClientData): string {
-      return jsonwebtoken.sign(data, this.serviceOptions.privateKey, this.signOptions);
+    return jsonwebtoken.sign(data, this.serviceOptions.privateKey, this.signOptions);
   }
 
 
@@ -68,9 +69,14 @@ export class JwtService {
   }
 
 
-  verify(token:string) {
+  verify(token: string) {
     return jsonwebtoken.verify(token, this.serviceOptions.publicKey, this.verifyOptions);
 
+  }
+
+  cookie(req: Request, res: Response, user: IUser) {
+    const token = this.encode({username: user.username, role: user.role, client: req.ip});
+    res.cookie(JWT_COOKIE_PROP, token, this.cookieOptions);
   }
 }
 
