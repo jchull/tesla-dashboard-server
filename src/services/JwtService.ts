@@ -64,8 +64,10 @@ export class JwtService {
   }
 
 
-  decode(token: string): IClientData {
-    return jsonwebtoken.decode(token, {complete: true}) as IClientData;
+  decode(token: string): IClientData | null {
+    // @ts-ignore
+    const {payload} = jsonwebtoken.decode(token, {complete: true});
+    return payload;
   }
 
 
