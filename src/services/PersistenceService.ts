@@ -1,6 +1,5 @@
 import {connect} from 'mongoose';
-import {Configuration} from '../model';
-import {IConfiguration} from 'tesla-dashboard-api';
+import {Configuration, ConfigurationType} from '../model';
 
 export class PersistenceService {
   endpoint: string;
@@ -25,9 +24,9 @@ export class PersistenceService {
         });
   }
 
-  public async getConfiguration(): Promise<IConfiguration> {
+  public async getConfiguration(): Promise<ConfigurationType | undefined> {
     // @ts-ignore
-    return Configuration.findOne({});
+    return Configuration.findOne({}) as ConfigurationType;
   }
 
 

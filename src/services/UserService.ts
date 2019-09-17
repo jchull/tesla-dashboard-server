@@ -1,5 +1,5 @@
-import {User, UserType} from '../model';
-import {IUser, UserRoles, ITeslaAccount} from 'tesla-dashboard-api';
+import {TeslaAccount, TeslaAccountType, User, UserType} from '../model';
+import {ITeslaAccount, IUser, UserRoles} from 'tesla-dashboard-api';
 import bcrypt from 'bcrypt';
 import {UserPreferences} from '../model/UserPreferences';
 
@@ -12,6 +12,11 @@ export class UserService {
   sanitizeUser(user: IUser): IUser {
     const {username, email, role} = user;
     return {username, email, role};
+  }
+
+  sanitizeTeslaAccount(account: ITeslaAccount): ITeslaAccount {
+    const {_id, email, refresh_token, access_token, token_created_at, token_expires_in, username} = account;
+    return {_id, email, refresh_token, access_token, token_created_at, token_expires_in, username};
   }
 
 
@@ -47,17 +52,31 @@ export class UserService {
     return user && user.pwdHash ? bcrypt.compareSync(password, user.pwdHash) : false;
   }
 
-  async getPreferences(username: string){
-    const prefs = await UserPreferences.findOne({username})
+  async getPreferences(username: string) {
+    const prefs = await UserPreferences.findOne({username});
 
   }
 
-  async getTeslaAccounts(username: string){
-
+  async getTeslaAccounts(username: string) {
+    const accountList = await TeslaAccount.find({username}) as [TeslaAccountType];
+    if (accountList && accountList.length) {
+      return accountList.map((account: ITeslaAccount) => this.sanitizeTeslaAccount(account));
+    }
   }
 
-  async updateTeslaAccount(account: ITeslaAccount){
-    //handle update or create
+  async updateTeslaAccount(account: ITeslaAccount) {
+    const _id = account._id;
+    let updatedAccount;
+    if (_id) {
+      const result = await TeslaAccount.updateOne({_id}, account, {password: 'delete'});
+      if (result && result.ok === 1) {
+        updatedAccount = await TeslaAccount.findOne({_id}) as TeslaAccountType;
+      }
+    } else {
+      updatedAccount = await TeslaAccount.create(account) as TeslaAccountType;
+    }
+    return updatedAccount && this.sanitizeTeslaAccount(updatedAccount);
+
   }
 
 }

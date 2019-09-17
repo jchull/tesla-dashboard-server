@@ -3,15 +3,14 @@
 
 import {PersistenceService} from './services/PersistenceService';
 import {DataSyncService} from './services/DataSyncService';
-import {ConfigurationType, TeslaAccount, User, UserType} from './model';
+import '../env/';
+import {UserService} from './services/UserService';
 
 // TODO: get rid of this
 const username = process.argv[2];
-const envfile = './env/.env';
-require('dotenv')
-    .config({path: envfile});
-const config = Object.assign({}, process.env);
 
+const config = Object.assign({}, process.env);
+const userService = new UserService();
 
 if (!username) {
   console.error('Username not provided for polling instance!');
@@ -21,21 +20,18 @@ if (!username) {
 
 // @ts-ignore
 const db = new PersistenceService(config.DB_CONN);
-db.connect()
-  .then(() => db.getConfiguration())
-  .then((conf: ConfigurationType) => {
-    TeslaAccount.count({});
-    User.findOne({username})
-        .populate('teslaAccounts')
-        // @ts-ignore
-        .then((user: UserType) => {
-          if(user.teslaAccounts){
-            user.teslaAccounts.forEach(teslaAccount => {
-              const server = new DataSyncService(conf, teslaAccount);
-              server.beginPolling(60000);
-            });
-          }
-        });
-  });
 
+async function start() {
+  await db.connect();
+  const config = await db.getConfiguration();
+  const teslaAccounts = await userService.getTeslaAccounts(username);
+  if (teslaAccounts) {
+    teslaAccounts.forEach(teslaAccount => {
+      const server = new DataSyncService(config, teslaAccount);
+      server.beginPolling(60000);
+    });
+  }
+}
+
+start();
 

@@ -10,16 +10,28 @@ import {
   Vehicle,
   VehicleConfig
 } from '../model';
+import {NOT_FOUND, UNAUTHORIZED} from 'http-status-codes';
 
 const routes = [
   {
     path: '/vehicle',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const vehicles = await Vehicle.find()
+      const username = res.getHeader('username');
+      if (!username) {
+        return res.status(UNAUTHORIZED)
+                  .end();
+      }
+      const vehicles = await Vehicle.find({username})
                                     .sort({$natural: -1});
-      res.status(200)
-         .json(vehicles);
+      if (vehicles && vehicles.length) {
+        return res.status(200)
+                  .json(vehicles);
+      }
+
+      return res.status(NOT_FOUND)
+                .end();
+
     }
   },
   {

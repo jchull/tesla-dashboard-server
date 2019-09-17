@@ -1,7 +1,7 @@
 import {Request, Response} from 'express';
-import {TeslaAccount, User, UserType} from '../model';
+import {User} from '../model';
 import {IUserPreferences} from 'tesla-dashboard-api';
-import {BAD_REQUEST, CREATED, NOT_FOUND, OK, UNAUTHORIZED} from 'http-status-codes';
+import {BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNAUTHORIZED} from 'http-status-codes';
 import {ParamsDictionary} from 'express-serve-static-core';
 import {jwt, JWT_COOKIE_PROP} from '../services/JwtService';
 import {UserService} from '../services/UserService';
@@ -27,7 +27,10 @@ const routes = [
                     message: 'Missing username URL Parameter'
                   });
       }
-      // TODO: currentUser === username? for authorization
+      if (!username) { // TODO: check against header username set by auth on response?
+        return res.status(UNAUTHORIZED)
+                  .end();
+      }
       const user = await userService.get(username);
       return user ? res.status(OK)
                        .json(user) :
@@ -93,13 +96,47 @@ const routes = [
     path: '/user/:username/tesla-account',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const accounts = await TeslaAccount.find();// TODO: fix accounts
-      if (!accounts) {
-        return res.status(NOT_FOUND)
-                  .send();
+      const {username} = req.params;
+      const accounts = await userService.getTeslaAccounts(username);
+      if (accounts) {
+        return res.status(OK)
+                  .json(accounts);
       }
-      res.status(OK)
-         .json(accounts);
+      return res.status(NOT_FOUND)
+                .send();
+    }
+  },
+  {
+    path: '/user/:username/tesla-account/:_id',
+    method: 'put',
+    handler: async (req: Request, res: Response) => {
+      try {
+        // Check Parameters
+        const account = req.body;
+        const {_id} = req.params;
+        // TODO: req.params._id should match account._id
+        if (!account) {
+          return res.status(BAD_REQUEST)
+                    .json({
+                      error: paramMissingError
+                    });
+        }
+        const result = await userService.updateTeslaAccount(account);
+        if (result) {
+          return res.status(OK)
+                    .json(result);
+        } else {
+          return res.status(INTERNAL_SERVER_ERROR)
+                    .json({
+                      message: 'Could not update Tesla Account info'
+                    });
+        }
+      } catch (err) {
+        return res.status(BAD_REQUEST)
+                  .json({
+                    error: err.message
+                  });
+      }
     }
   },
 
@@ -170,7 +207,7 @@ const routes = [
     path: '/logout',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      res.cookie(JWT_COOKIE_PROP, undefined, jwtService.cookieOptions);
+      res.clearCookie(JWT_COOKIE_PROP, jwtService.cookieOptions);
       return res.status(OK)
                 .end();
     }

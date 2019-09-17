@@ -20,7 +20,8 @@ const VehicleSchema: Schema = new Schema({
   time_to_full_charge: {type: Number},
   charge_limit_soc: {type: Number},
   charge_limit_soc_min: {type: Number},
-  last_session_id: {type: String}
+  last_session_id: {type: String},
+  username: {type: String}
 
 });
 
