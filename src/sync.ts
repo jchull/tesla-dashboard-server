@@ -23,7 +23,7 @@ const db = new PersistenceService(config.DB_CONN);
 
 async function start() {
   await db.connect();
-  const config = await db.getConfiguration();
+  const config = await PersistenceService.getConfiguration();
   const teslaAccounts = await userService.getTeslaAccounts(username);
   if (teslaAccounts) {
     teslaAccounts.forEach(teslaAccount => {
