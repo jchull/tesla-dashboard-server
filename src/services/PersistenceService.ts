@@ -8,6 +8,14 @@ export class PersistenceService {
     this.endpoint = endpoint;
   }
 
+  public static async getConfiguration(): Promise<ConfigurationType> {
+    const config = <ConfigurationType>await Configuration.findOne();
+    if (!config) {
+      throw Error('No app configuration found!');
+    }
+    return config;
+  }
+
   async connect() {
     // Mongoose.Promise = global.Promise;
     connect(this.endpoint, {useNewUrlParser: true})
@@ -22,11 +30,6 @@ export class PersistenceService {
           console.log('Error connecting to database: ', error);
           return process.exit(1);
         });
-  }
-
-  public async getConfiguration(): Promise<ConfigurationType | undefined> {
-    // @ts-ignore
-    return Configuration.findOne({}) as ConfigurationType;
   }
 
 

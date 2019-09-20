@@ -1,7 +1,6 @@
-import {TeslaAccount, TeslaAccountType, User, UserType} from '../model';
+import {TeslaAccount, TeslaAccountType, User, UserPreferences, UserType} from '../model';
 import {ITeslaAccount, IUser, UserRoles} from 'tesla-dashboard-api';
 import bcrypt from 'bcrypt';
-import {UserPreferences} from '../model/UserPreferences';
 
 
 export class UserService {
@@ -58,19 +57,21 @@ export class UserService {
   }
 
   async getTeslaAccounts(username: string) {
-    const accountList = await TeslaAccount.find({username}) as [TeslaAccountType];
+    const accountList = await TeslaAccount.find({username})
+                                          .populate('sync_preferences') as [TeslaAccountType];
     if (accountList && accountList.length) {
       return accountList.map((account: ITeslaAccount) => this.sanitizeTeslaAccount(account));
     }
   }
 
   async updateTeslaAccount(account: ITeslaAccount) {
-    const _id = account._id;
+    const {_id} = account;
     let updatedAccount;
     if (_id) {
       const result = await TeslaAccount.updateOne({_id}, account, {password: 'delete'});
       if (result && result.ok === 1) {
-        updatedAccount = await TeslaAccount.findOne({_id}) as TeslaAccountType;
+        updatedAccount = await TeslaAccount.findOne({_id})
+                                           .populate('sync_preferences') as TeslaAccountType;
       }
     } else {
       updatedAccount = await TeslaAccount.create(account) as TeslaAccountType;

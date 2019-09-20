@@ -115,7 +115,7 @@ export class TeslaOwnerService {
                    (err) => {
                      const statusCode = err.response.status;
                      switch (statusCode) {
-                 // TODO: handle response codes?
+                         // TODO: handle response codes?
                        default:
                          console.log(`Got response ${statusCode} and it is not handled yet`);
                          console.log(err);

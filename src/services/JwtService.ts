@@ -30,11 +30,10 @@ export const jwt = (options?: IJwtServiceOptions): JwtService => {
 };
 
 export class JwtService {
+  readonly cookieOptions: CookieOptions;
   private readonly serviceOptions: IJwtServiceOptions;
   private readonly signOptions: SignOptions;
   private readonly verifyOptions: VerifyOptions;
-  readonly cookieOptions: CookieOptions;
-
 
   constructor(options: IJwtServiceOptions) {
     this.signOptions = Object.freeze({

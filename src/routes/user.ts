@@ -131,6 +131,7 @@ const routes = [
                       message: 'Could not update Tesla Account info'
                     });
         }
+        // TODO: do products query when new account is added, if account cannot connect, keep status
       } catch (err) {
         return res.status(BAD_REQUEST)
                   .json({

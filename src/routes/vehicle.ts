@@ -11,13 +11,18 @@ import {
   VehicleConfig
 } from '../model';
 import {NOT_FOUND, UNAUTHORIZED} from 'http-status-codes';
+import {UserService} from '../services/UserService';
+
+
+const userService = new UserService();
+
 
 const routes = [
   {
     path: '/vehicle',
     method: 'get',
     handler: async (req: Request, res: Response) => {
-      const username = res.getHeader('username');
+      const username = res.getHeader('username') as string;
       if (!username) {
         return res.status(UNAUTHORIZED)
                   .end();
@@ -27,6 +32,15 @@ const routes = [
       if (vehicles && vehicles.length) {
         return res.status(200)
                   .json(vehicles);
+      }
+      // no vehicles found, see if we have tesla account and get vehicles
+      if (username) {
+        const teslaAccounts = await userService.getTeslaAccounts(username);
+        if (teslaAccounts && teslaAccounts.length) {
+          // TODO:  teslaAccounts.forEach(account => )
+        } else {
+
+        }
       }
 
       return res.status(NOT_FOUND)
@@ -44,6 +58,35 @@ const routes = [
          .json(vehicle);
 
       // TODO: 404
+    }
+  },
+  {
+    path: '/vehicle/:id_s/sync',
+    method: 'get',
+    handler: async (req: Request, res: Response) => {
+      const id_s = req.params.id_s;
+      // TODO: get sync service status and return
+      res.status(500)
+         .send('not yet implemented');
+    }
+  },
+  {
+    path: '/vehicle/:id_s/sync',
+    method: 'post',
+    handler: async (req: Request, res: Response) => {
+      const id_s = req.params.id_s;
+      const vehicle = await Vehicle.find({id_s}).populate(['sync_preferences']);
+
+      console.log(req.query.params);
+      //
+      // if(!account.sync_preferences._id){
+      //   account.sync_preferences = await SyncPreferences.create(account.sync_preferences);
+      // } else {
+      //   await SyncPreferences.updateOne({_id: account.sync_preferences._id}, account.sync_preferences)
+      // }
+      // TODO: start/stop/reload sync service
+      res.status(500)
+         .send('not yet implemented');
     }
   },
   {
