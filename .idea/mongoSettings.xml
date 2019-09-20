@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MongoConfiguration">
+    <option name="serverConfigurations">
+      <list>
+        <ServerConfiguration>
+          <option name="label" value="TeslaDB" />
+          <option name="password" value="aid83UJ6dhD-DJ!7dh" />
+          <option name="serverUrls">
+            <list>
+              <option value="localhost:7056" />
+            </list>
+          </option>
+          <option name="sshTunnelingConfiguration">
+            <SshTunnelingConfiguration />
+          </option>
+          <option name="userDatabase" value="tesladb" />
+          <option name="username" value="tsla" />
+        </ServerConfiguration>
+      </list>
+    </option>
+  </component>
+</project>
