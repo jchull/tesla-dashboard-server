@@ -24,11 +24,13 @@ applyMiddleware(middleware, router);
 // @ts-ignore
 applyRoutes(routes, router);
 
+// TODO: start any polling processes that are configured in DB using child_process api
+
 
 // @ts-ignore
 const db = new PersistenceService(config.DB_CONN);
 db.connect()
-  .then(() => db.getConfiguration())
+  .then(() => PersistenceService.getConfiguration())
   .then((conf: ConfigurationType) => {
     const server = createServer(router);
     server.listen(conf.apiPort, () =>

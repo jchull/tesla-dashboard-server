@@ -21,8 +21,9 @@ const VehicleSchema: Schema = new Schema({
   charge_limit_soc: {type: Number},
   charge_limit_soc_min: {type: Number},
   last_session_id: {type: String},
-  username: {type: String}
-
+  username: {type: String},
+  sync_preferences: {type: Schema.Types.ObjectId, ref: 'SyncPreferences'},
+  sync_state: {type: String}
 });
 
 export const Vehicle = model('Vehicle', VehicleSchema);

@@ -1,4 +1,4 @@
-import {model, Document, Schema} from 'mongoose';
+import {Document, model, Schema} from 'mongoose';
 import {IChargeSession} from 'tesla-dashboard-api';
 
 const ChargeSessionSchema: Schema = new Schema({
