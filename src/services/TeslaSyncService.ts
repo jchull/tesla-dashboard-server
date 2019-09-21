@@ -1,3 +1,4 @@
+import {parentPort} from 'worker_threads';
 import {TeslaOwnerService} from './TeslaOwnerService';
 import {
   ChargeSession,
@@ -8,29 +9,49 @@ import {
   DriveSession,
   DriveSessionType,
   DriveState,
-  DriveStateType,
+  DriveStateType, TeslaAccount,
   Vehicle,
   VehicleType
 } from '../model';
-import {IChargeState, ITeslaAccount, IVehicle, IVehicleData} from 'tesla-dashboard-api';
+import {IChargeState, IVehicle, IVehicleData, ITeslaAccount, ISyncPreferences} from 'tesla-dashboard-api';
+import {userService, vs} from './index';
 
-export class DataSyncService {
-  private config: ConfigurationType;
-  private ownerService: TeslaOwnerService;
 
-  constructor(config: ConfigurationType, teslaAccount: ITeslaAccount) {
-    this.config = config;
-    this.ownerService = new TeslaOwnerService(config.ownerBaseUrl, config.teslaClientKey, config.teslaClientSecret, teslaAccount);
+export class TeslaSyncService {
+  private ownerService?: TeslaOwnerService;
+  private syncPrefs?: ISyncPreferences;
+  private readonly id_s: string;
+  private readonly username: string;
+
+  constructor(id_s: string, username: string) {
+    this.id_s = id_s;
+    this.username = username;
   }
 
+  public async start(){
+    const localVehicle = await vs.get(this.id_s);
+    if(this.ownerService && localVehicle && localVehicle.sync_preferences && localVehicle.sync_preferences.enabled){
+      const vehicle = await this.ownerService.getVehicle(this.id_s);
+      if(vehicle){
+        await this.updateVehicle(vehicle);
+        this.syncPrefs = localVehicle.sync_preferences;
+        this.doPoll(vehicle.id_s);
+      }
+    }else {
+      console.log("sync is not enabled for this account");
+    }
 
-  public beginPolling(pollingInterval: number): void {
-    console.log(`Polling started every ${pollingInterval / 1000} seconds...`);
-    this.ownerService.checkToken()
-        .then(() => this.ownerService.getVehicles())
-        .then((vehicleList: [VehicleType]) => this.updateVehicles(vehicleList));
+    // const account = await userService.getTeslaAccountForVehicle(this.username, this.id_s);
+    // const account = accounts.find(acct => acct.e)
+    // const config = getConfiguration();
+    // this.ownerService = new TeslaOwnerService(config.ownerBaseUrl, config.teslaClientKey, config.teslaClientSecret, this.teslaAccount);
+    // // get current state
+    // // then start polling
+    // this.ownerService.checkToken()
+    //     .then(() => this.ownerService.getVehicles())
+    //     .then((vehicleList: [VehicleType]) => this.updateVehicles(vehicleList));
+  }
 
-  };
 
   public async updateVehicleData(vehicleData: IVehicleData): Promise<void> {
     if (vehicleData) {
@@ -53,6 +74,7 @@ export class DataSyncService {
         if (!activeChargingSession) {
 
           // TODO: when creating a new charge session, look for nearby charging sites or < .1 mile?
+          // @ts-ignore
           const nearby_charging_sites = await this.ownerService.getNearbyChargers(id_s);
           console.log(nearby_charging_sites);
 
@@ -115,23 +137,43 @@ export class DataSyncService {
     }
   }
 
-  private updateVehicles(vehicleList: [IVehicle]): void {
-    vehicleList.forEach(async vehicle => {
-      const exists = await Vehicle.exists({id_s: vehicle.id_s});
-      if (!exists) {
-        await Vehicle.create(vehicle);
-      }
-      const handler = this.getUpdateHandler(vehicle.id_s);
-      handler() && setInterval(handler, 60000);
-    });
+  private async updateVehicle(vehicle: IVehicle): Promise<void> {
+    parentPort && parentPort.postMessage('updating vehicle');
+    const exists = await Vehicle.exists({id_s: vehicle.id_s});
+    if (!exists) {
+      await Vehicle.create(vehicle);
+    }
   }
 
-  private getUpdateHandler(vehicleId: String) {
-    return () => {
-      return this.ownerService.getState(vehicleId)
-                 .then(vehicleData => vehicleData && this.updateVehicleData(vehicleData));
-    };
+  private async doPoll(vehicleId: String) {
+    if(this.ownerService){
+      const vehicleData = await this.ownerService.getState(vehicleId);
+      if(vehicleData){
+        await this.updateVehicleData(vehicleData);
+        const nextUpdateIn = this.scheduleNext(vehicleData);
+        setTimeout(this.doPoll, nextUpdateIn);
+      }
+    }
+
   };
+
+  private scheduleNext(vehicleData:IVehicleData): number {
+    if(this.syncPrefs) {
+      if (this.isCharging(vehicleData) && vehicleData.charge_state.charger_power) {
+        if (vehicleData.charge_state.charger_power > 0 && vehicleData.charge_state.charger_power < 3) {
+          return this.syncPrefs.charging_pollingIntervalsSeconds[0];
+        } else if (vehicleData.charge_state.charger_power < 20) {
+          return this.syncPrefs.charging_pollingIntervalsSeconds[1];
+        }
+        if (vehicleData.charge_state.charger_power >= 20) {
+          return this.syncPrefs.charging_pollingIntervalsSeconds[2];
+        }
+      } else if (this.isDriving(vehicleData)) {
+        return this.syncPrefs.driving_pollingIntervalSeconds * 1000;
+      }
+    }
+    return 60000;
+  }
 
   private hasChanges(existing: IChargeState, incoming: IVehicleData): boolean {
     return existing.charge_energy_added !== incoming.charge_state.charge_energy_added &&

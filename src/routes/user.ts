@@ -4,11 +4,10 @@ import {IUserPreferences} from 'tesla-dashboard-api';
 import {BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNAUTHORIZED} from 'http-status-codes';
 import {ParamsDictionary} from 'express-serve-static-core';
 import {jwt, JWT_COOKIE_PROP} from '../services/JwtService';
-import {UserService} from '../services/UserService';
+import {userService} from '../services';
 
 
 const jwtService = jwt();
-const userService = new UserService();
 
 const paramMissingError = 'Parameter missing';
 const loginFailedErr = 'Login failed';

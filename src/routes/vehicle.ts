@@ -1,20 +1,7 @@
 import {Request, Response} from 'express';
-import {
-  ChargeSession,
-  ChargeSessionType,
-  ChargeState,
-  DriveSession,
-  DriveSessionType,
-  DriveState,
-  GuiSettings,
-  Vehicle,
-  VehicleConfig
-} from '../model';
+import {ChargeSession, ChargeSessionType, ChargeState, DriveSession, DriveSessionType, DriveState} from '../model';
 import {NOT_FOUND, UNAUTHORIZED} from 'http-status-codes';
-import {UserService} from '../services/UserService';
-
-
-const userService = new UserService();
+import {userService, vs} from '../services';
 
 
 const routes = [
@@ -27,9 +14,8 @@ const routes = [
         return res.status(UNAUTHORIZED)
                   .end();
       }
-      const vehicles = await Vehicle.find({username})
-                                    .sort({$natural: -1});
-      if (vehicles && vehicles.length) {
+      const vehicles = await vs.findMy(username);
+      if (vehicles) {
         return res.status(200)
                   .json(vehicles);
       }
@@ -53,7 +39,7 @@ const routes = [
     method: 'get',
     handler: async (req: Request, res: Response) => {
       const id_s = req.params.id_s;
-      const vehicle = await Vehicle.find({id_s});
+      const vehicle = await vs.get(id_s);
       res.status(200)
          .json(vehicle);
 
@@ -75,7 +61,7 @@ const routes = [
     method: 'post',
     handler: async (req: Request, res: Response) => {
       const id_s = req.params.id_s;
-      const vehicle = await Vehicle.find({id_s}).populate(['sync_preferences']);
+      const vehicle = await vs.get(id_s);
 
       console.log(req.query.params);
       //
@@ -93,8 +79,7 @@ const routes = [
     path: '/vehicle/:id_s',
     method: 'put',
     handler: async (req: Request, res: Response) => {
-      const vehicle = await Vehicle.create(req.body);
-      console.log(`Vehicle created: ${vehicle}`);
+      const vehicle = await vs.create(req.body);
       res.status(200)
          .json(vehicle);
     }
@@ -105,18 +90,7 @@ const routes = [
     handler: async (req: Request, res: Response) => {
       const id_s = req.params.id_s;
       if (id_s) {
-        const deletions = await Promise.all([
-          Vehicle.findOneAndDelete({id_s}),
-          ChargeState.deleteMany({id_s}),
-          DriveState.deleteMany({id_s}),
-          GuiSettings.deleteMany({id_s}),
-          VehicleConfig.deleteMany({id_s}),
-          ChargeSession.deleteMany({id_s}),
-          DriveSession.deleteMany({id_s})
-        ]);
-
-        // @ts-ignore
-        const deletedCount: number = deletions.reduce((acc, cur) => acc + (cur && cur.deletedCount || 0), 0);
+        const deletedCount = await vs.delete(id_s);
         res.status(200)
            .send(`vehicle and data deleted ${deletedCount} documents`);
       } else {
@@ -295,7 +269,7 @@ const routes = [
     path: '/vehicle/:id_s/session/merge',
     method: 'post',
     handler: async (req: Request, res: Response) => {
-      const sessionIds = req.body.sessionIds as Array<string>;
+      const sessionIds = req.body.sessionIds as [string];
       // get all the sessions in sessionIds
       // delete all states that are not a first or last for one of the sessions
       // update the sessionIds for all the old first/last to point to new sessionId

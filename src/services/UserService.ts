@@ -57,8 +57,7 @@ export class UserService {
   }
 
   async getTeslaAccounts(username: string) {
-    const accountList = await TeslaAccount.find({username})
-                                          .populate('sync_preferences') as [TeslaAccountType];
+    const accountList = await TeslaAccount.find({username})as [TeslaAccountType];
     if (accountList && accountList.length) {
       return accountList.map((account: ITeslaAccount) => this.sanitizeTeslaAccount(account));
     }
@@ -70,8 +69,7 @@ export class UserService {
     if (_id) {
       const result = await TeslaAccount.updateOne({_id}, account, {password: 'delete'});
       if (result && result.ok === 1) {
-        updatedAccount = await TeslaAccount.findOne({_id})
-                                           .populate('sync_preferences') as TeslaAccountType;
+        updatedAccount = await TeslaAccount.findOne({_id})as TeslaAccountType;
       }
     } else {
       updatedAccount = await TeslaAccount.create(account) as TeslaAccountType;

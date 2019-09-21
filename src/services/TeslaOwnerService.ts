@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {TeslaAccount, VehicleType} from '../model';
-import {ITeslaAccount} from 'tesla-dashboard-api';
+import {ITeslaAccount, IVehicleData} from 'tesla-dashboard-api';
 
 export class TeslaOwnerService {
   endpoint: string;
@@ -60,7 +60,7 @@ export class TeslaOwnerService {
   }
 
 
-  getVehicles(): Promise<Array<VehicleType>> {
+  getVehicles(): Promise<[VehicleType]> {
     return this.checkToken()
                .then(() => axios.get(`${this.endpoint}/api/1/vehicles`, {
                  headers: {
@@ -71,7 +71,7 @@ export class TeslaOwnerService {
                .then((vehicleListResponse) => vehicleListResponse && vehicleListResponse.data && vehicleListResponse.data.response);
   }
 
-  getState(id: String) {
+  getState(id: String): Promise<IVehicleData| undefined> {
     return this.checkToken()
                .then(() => axios.get(`${this.endpoint}/api/1/vehicles/${id}/vehicle_data`, {
                  headers: {
@@ -121,5 +121,16 @@ export class TeslaOwnerService {
                          console.log(err);
                      }
                    });
+  }
+
+  async getVehicle(id_s: string) {
+    return this.checkToken()
+               .then(() => axios.get(`${this.endpoint}/api/1/vehicles/${id_s}`, {
+                 headers: {
+                   'User-Agent': 'coderado-tesla-sync',
+                   'Authorization': `Bearer ${this.teslaAccount.access_token}`
+                 }
+               }))
+               .then((vehicleResponse) => vehicleResponse && vehicleResponse.data && vehicleResponse.data.response);
   }
 }
