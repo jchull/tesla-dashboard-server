@@ -1,8 +1,9 @@
-import productRoutes from './product';
-import userRoutes from './user';
+import {getUserRoutes} from './user';
 import adminRoutes from './admin';
-import vehicleRoutes from './vehicle';
+import {getVehicleRoutes} from './vehicle';
 import {Route} from '../util';
 
-export default [...productRoutes, ...userRoutes, ...adminRoutes, ...vehicleRoutes] as Route[];
+export function getRoutes(services:any): Route[]{
+  return [...getUserRoutes(services), ...adminRoutes, ...getVehicleRoutes(services)] as Route[];
+}
 

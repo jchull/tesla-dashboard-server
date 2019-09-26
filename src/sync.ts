@@ -3,7 +3,6 @@
 
 import {PersistenceService} from './services/PersistenceService';
 import {DataSyncService} from './services/DataSyncService';
-import '../env/';
 import {UserService} from './services/UserService';
 
 // TODO: get rid of this

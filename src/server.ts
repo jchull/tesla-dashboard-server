@@ -1,14 +1,14 @@
 import {createServer} from 'http';
 import express from 'express';
-import {ssm} from './services';
+import * as services from './services';
 import {applyMiddleware, applyRoutes} from './util';
-import routes from './routes';
+import {getRoutes} from './routes';
 import middleware from './middleware';
 import {PersistenceService} from './services/PersistenceService';
 
 const router = express();
 applyMiddleware(middleware, router);
-applyRoutes(routes, router);
+applyRoutes(getRoutes(services), router);
 
 
 PersistenceService.getConfiguration()
@@ -16,7 +16,9 @@ PersistenceService.getConfiguration()
       const server = createServer(router);
       server.listen(conf.apiPort, () =>
           console.log(`Server is running at http://localhost:${conf.apiPort} ...`));
-      ssm.init();
+
+      // load sync services which will start up workers for any configured sync instances
+      services.ssm.load();
     });
 
 

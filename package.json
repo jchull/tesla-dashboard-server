@@ -4,28 +4,28 @@
   "private": true,
   "scripts": {
     "postinstall": "npm link tesla-dashboard-api",
-    "dev": "tsc-watch --onSuccess \"node ./dist/server.js\"",
+    "dev": "tsc-watch --onSuccess \"node --experimental-worker -r ./env ./dist/server.js\"",
     "clean": "rimraf dist",
     "deploy": "docker build -t tesla-dashboard-server .",
     "poll": "npm run build && node ./dist/sync.js jchull",
     "build": "tsc",
-    "start": "cross-env ENV_FILE=production node -r ./env -r module-alias/register ./dist/start.js"
+    "start": "node --experimental-worker -r ./env ./dist/server.js"
   },
   "dependencies": {
     "axios": "^0.19.0",
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
-    "debug": "^4.1.1",
-    "mongodb": "^3.3.2",
-    "mongoose": "^5.6.8",
-    "bcrypt": "^3.0.6",
     "cookie-parser": "^1.4.4",
     "cross-env": "^5.2.0",
+    "debug": "^4.1.1",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
     "http-status-codes": "^1.3.2",
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.1",
+    "mongodb": "^3.3.2",
+    "mongoose": "^5.6.8",
     "morgan": "^1.9.1"
   },
   "jest": {
