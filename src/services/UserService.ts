@@ -1,6 +1,12 @@
 import {TeslaAccount, TeslaAccountType, User, UserPreferences, UserType} from '../model';
 import {ITeslaAccount, IUser, UserRoles} from 'tesla-dashboard-api';
-import bcrypt from 'bcrypt';
+import {VehicleService} from './VehicleService';
+
+const { isMainThread } = require("worker_threads");
+
+let bcrypt:any;
+if (isMainThread) bcrypt = require("bcrypt");
+const vs = new VehicleService();
 
 
 export class UserService {
@@ -27,6 +33,9 @@ export class UserService {
   }
 
   async create(user: IUser): Promise<IUser> {
+    if(!bcrypt){
+      throw Error("Cannot run bcrypt in worker!");
+    }
     const saltRounds = 10;
     const hash = await bcrypt.hashSync(user.password, saltRounds);
     return await User.create({
@@ -56,9 +65,18 @@ export class UserService {
 
   }
 
-  async getTeslaAccounts(username: string) {
-    const accountList = await TeslaAccount.find({username})as [TeslaAccountType];
+  async getTeslaAccounts(username: string, vehicleId?: string) {
+    const accountList = await TeslaAccount.find({username}) as [TeslaAccountType];
     if (accountList && accountList.length) {
+      if (vehicleId) {
+        const vehicle = await vs.get(vehicleId);
+        if (vehicle && vehicle.sync_preferences) {
+          const {account_id} = vehicle.sync_preferences;
+          return accountList.filter(account => account_id === account._id)
+                            .map((account: ITeslaAccount) => this.sanitizeTeslaAccount(account));
+
+        }
+      }
       return accountList.map((account: ITeslaAccount) => this.sanitizeTeslaAccount(account));
     }
   }
@@ -69,7 +87,7 @@ export class UserService {
     if (_id) {
       const result = await TeslaAccount.updateOne({_id}, account, {password: 'delete'});
       if (result && result.ok === 1) {
-        updatedAccount = await TeslaAccount.findOne({_id})as TeslaAccountType;
+        updatedAccount = await TeslaAccount.findOne({_id}) as TeslaAccountType;
       }
     } else {
       updatedAccount = await TeslaAccount.create(account) as TeslaAccountType;

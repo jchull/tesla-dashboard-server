@@ -4,11 +4,12 @@ import {
   DriveSession,
   DriveState,
   GuiSettings,
+  SyncPreferences, SyncPreferencesType,
   Vehicle,
   VehicleConfig,
   VehicleType
 } from '../model';
-import {IVehicle} from 'tesla-dashboard-api';
+import {ISyncPreferences, IVehicle} from 'tesla-dashboard-api';
 
 
 export class VehicleService {
@@ -27,6 +28,7 @@ export class VehicleService {
 
   async findMy(username: string): Promise<[VehicleType] | undefined> {
     const vehicles = await Vehicle.find({username})
+                                  .populate(['sync_preferences'])
                                   .sort({$natural: -1});
     if (vehicles) {
       return vehicles as [VehicleType];
@@ -42,6 +44,25 @@ export class VehicleService {
 
   async update(vehicle: IVehicle): Promise<VehicleType | undefined> {
     return Vehicle.updateOne({id_s: vehicle.id_s}, vehicle);
+  }
+
+
+  async updateSyncPreferences(vehicle: IVehicle, prefs: ISyncPreferences): Promise<ISyncPreferences | undefined> {
+    if (vehicle) {
+      const id_s = vehicle.id_s;
+      if (prefs._id === 'default') {
+        delete prefs._id;
+      }
+      if (!prefs._id) {
+        vehicle.sync_preferences = <SyncPreferencesType> await SyncPreferences.create(prefs);
+        await Vehicle.updateOne({id_s}, vehicle);
+      } else if (!vehicle.sync_preferences || vehicle.sync_preferences._id !== prefs._id) {
+        await SyncPreferences.updateOne({_id:prefs._id}, prefs);
+        vehicle.sync_preferences = prefs;
+        await Vehicle.updateOne({id_s}, vehicle);
+      }
+      return vehicle.sync_preferences;
+    }
   }
 
   async delete(id_s: string) {
@@ -63,7 +84,7 @@ export class VehicleService {
 
 
   async findAll(): Promise<[VehicleType] | undefined> {
-    const vehicles = await Vehicle.find();
+    const vehicles = await Vehicle.find().populate(['sync_preferences']);
     if (vehicles) {
       return vehicles as [VehicleType];
     }

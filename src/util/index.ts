@@ -1,5 +1,4 @@
 import {NextFunction, Request, Response, Router} from 'express';
-
 type Wrapper = ((router: Router) => void);
 
 export const applyMiddleware = (

@@ -5,51 +5,61 @@ import {
   ChargeSessionType,
   ChargeState,
   ChargeStateType,
-  ConfigurationType,
   DriveSession,
   DriveSessionType,
   DriveState,
-  DriveStateType, TeslaAccount,
+  DriveStateType, TeslaAccount, TeslaAccountType,
   Vehicle,
   VehicleType
 } from '../model';
-import {IChargeState, IVehicle, IVehicleData, ITeslaAccount, ISyncPreferences} from 'tesla-dashboard-api';
-import {userService, vs} from './index';
+import {IChargeState, IConfiguration, ISyncPreferences, IVehicle, IVehicleData} from 'tesla-dashboard-api';
+import {PersistenceService} from './PersistenceService';
+import {VehicleService} from './VehicleService';
 
+let appConfig:IConfiguration;
+PersistenceService.getConfiguration()
+                  .then(conf => {
+                    appConfig = conf;
+                  });
+
+const vs = new VehicleService();
 
 export class TeslaSyncService {
   private ownerService?: TeslaOwnerService;
   private syncPrefs?: ISyncPreferences;
   private readonly id_s: string;
   private readonly username: string;
+  private readonly appConfig: IConfiguration;
 
   constructor(id_s: string, username: string) {
     this.id_s = id_s;
     this.username = username;
+    this.appConfig = appConfig;
   }
 
-  public async start(){
+  public async start() {
     const localVehicle = await vs.get(this.id_s);
-    if(this.ownerService && localVehicle && localVehicle.sync_preferences && localVehicle.sync_preferences.enabled){
-      const vehicle = await this.ownerService.getVehicle(this.id_s);
-      if(vehicle){
-        await this.updateVehicle(vehicle);
-        this.syncPrefs = localVehicle.sync_preferences;
-        this.doPoll(vehicle.id_s);
+    if (localVehicle) {
+      if(localVehicle.username !== this.username){
+        throw Error("Unauthorized sync");
       }
-    }else {
-      console.log("sync is not enabled for this account");
-    }
+      console.log(`Starting TeslaSyncService for ${localVehicle}`);
+      const teslaAccounts = await TeslaAccount.find({username: this.username, id_s: this.id_s }) as [TeslaAccountType];
+      if (teslaAccounts && teslaAccounts.length === 1) {
+        this.ownerService = new TeslaOwnerService(this.appConfig.ownerBaseUrl, this.appConfig.teslaClientKey, this.appConfig.teslaClientSecret, teslaAccounts[0]);
 
-    // const account = await userService.getTeslaAccountForVehicle(this.username, this.id_s);
-    // const account = accounts.find(acct => acct.e)
-    // const config = getConfiguration();
-    // this.ownerService = new TeslaOwnerService(config.ownerBaseUrl, config.teslaClientKey, config.teslaClientSecret, this.teslaAccount);
-    // // get current state
-    // // then start polling
-    // this.ownerService.checkToken()
-    //     .then(() => this.ownerService.getVehicles())
-    //     .then((vehicleList: [VehicleType]) => this.updateVehicles(vehicleList));
+        if (this.ownerService && localVehicle.sync_preferences && localVehicle.sync_preferences.enabled) {
+          const vehicle = await this.ownerService.getVehicle(this.id_s);
+          if (vehicle) {
+            await this.updateVehicle(vehicle);
+            this.syncPrefs = localVehicle.sync_preferences;
+            this.doPoll(vehicle.id_s);
+          }
+        }
+      }
+    } else {
+      console.log('sync is not enabled for this account');
+    }
   }
 
 
@@ -146,21 +156,21 @@ export class TeslaSyncService {
   }
 
   private async doPoll(vehicleId: String) {
-    if(this.ownerService){
+    if (this.ownerService) {
       const vehicleData = await this.ownerService.getState(vehicleId);
-      if(vehicleData){
+      if (vehicleData) {
         await this.updateVehicleData(vehicleData);
-        const nextUpdateIn = this.scheduleNext(vehicleData);
+        const nextUpdateIn = this.scheduleNextUpdateSeconds(vehicleData) * 1000;
         setTimeout(this.doPoll, nextUpdateIn);
       }
     }
 
   };
 
-  private scheduleNext(vehicleData:IVehicleData): number {
-    if(this.syncPrefs) {
-      if (this.isCharging(vehicleData) && vehicleData.charge_state.charger_power) {
-        if (vehicleData.charge_state.charger_power > 0 && vehicleData.charge_state.charger_power < 3) {
+  private scheduleNextUpdateSeconds(vehicleData: IVehicleData): number {
+    if (this.syncPrefs) {
+      if (this.isCharging(vehicleData) && vehicleData.charge_state.charger_power && vehicleData.charge_state.charger_power > 0) {
+        if (vehicleData.charge_state.charger_power < 2) {
           return this.syncPrefs.charging_pollingIntervalsSeconds[0];
         } else if (vehicleData.charge_state.charger_power < 20) {
           return this.syncPrefs.charging_pollingIntervalsSeconds[1];
@@ -169,10 +179,10 @@ export class TeslaSyncService {
           return this.syncPrefs.charging_pollingIntervalsSeconds[2];
         }
       } else if (this.isDriving(vehicleData)) {
-        return this.syncPrefs.driving_pollingIntervalSeconds * 1000;
+        return this.syncPrefs.driving_pollingIntervalSeconds;
       }
     }
-    return 60000;
+    return 60;
   }
 
   private hasChanges(existing: IChargeState, incoming: IVehicleData): boolean {

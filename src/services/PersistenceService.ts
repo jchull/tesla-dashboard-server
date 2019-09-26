@@ -24,7 +24,7 @@ export class PersistenceService {
           //   console.log('Reconnecting to DB...');
           //   this.connect();
           // });
-          return console.log(`Successfully connected to DB`);
+          return;
         })
         .catch(error => {
           console.log('Error connecting to database: ', error);
