@@ -7,7 +7,7 @@
     "dev": "tsc-watch --onSuccess \"node --experimental-worker -r ./env ./dist/server.js\"",
     "clean": "rimraf dist",
     "deploy": "docker build -t tesla-dashboard-server .",
-    "poll": "npm run build && node ./dist/sync.js jchull",
+    "poll": "npm run build && node --experimental-worker -r ./env ./dist/sync.js jchull",
     "build": "tsc",
     "start": "node --experimental-worker -r ./env ./dist/server.js"
   },
