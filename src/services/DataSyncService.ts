@@ -17,9 +17,11 @@ import {IChargeState, ITeslaAccount, IVehicle, IVehicleData} from 'tesla-dashboa
 export class DataSyncService {
   private config: ConfigurationType;
   private ownerService: TeslaOwnerService;
+  private readonly username: string | undefined;
 
   constructor(config: ConfigurationType, teslaAccount: ITeslaAccount) {
     this.config = config;
+    this.username = teslaAccount.username;
     this.ownerService = new TeslaOwnerService(config.ownerBaseUrl, config.teslaClientKey, config.teslaClientSecret, teslaAccount);
   }
 
@@ -34,6 +36,8 @@ export class DataSyncService {
 
   public async updateVehicleData(vehicleData: IVehicleData): Promise<void> {
     if (vehicleData) {
+      console.log(vehicleData);
+
       const {state, id_s} = vehicleData;
       const vehicleStatus = this.findVehicleState(vehicleData);
       console.log(`${vehicleData.display_name} is currently ${vehicleStatus}`);
@@ -111,6 +115,7 @@ export class DataSyncService {
       vehicle.time_to_full_charge = vehicleData.charge_state.time_to_full_charge;
       vehicle.charge_limit_soc = vehicleData.charge_state.charge_limit_soc;
       vehicle.state = vehicleStatus;
+      vehicle.username = this.username;
       return Vehicle.updateOne({id_s}, vehicle);
     }
   }
@@ -215,7 +220,6 @@ export class DataSyncService {
       session.scheduled_charging_pending = vehicleData.charge_state.scheduled_charging_pending;
       session.scheduled_charging_start_time = vehicleData.charge_state.scheduled_charging_start_time;
 
-      console.log(`appending charge state`);
       await ChargeSession.updateOne({_id: session._id}, session);
     } else {
       console.log('No Changes detected');
@@ -280,7 +284,6 @@ export class DataSyncService {
       await Vehicle.updateOne({id_s}, vehicle);
     }
 
-    console.log(`appending drive state`);
     return DriveSession.updateOne({_id: session._id}, session);
   }
 
