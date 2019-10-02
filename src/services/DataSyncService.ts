@@ -62,7 +62,6 @@ export class DataSyncService {
 
 
           activeChargingSession = <ChargeSessionType>await ChargeSession.create({
-            id_s,
             vehicle,
             start_date: vehicleData.charge_state.timestamp,
             end_date: vehicleData.charge_state.timestamp,
@@ -90,7 +89,6 @@ export class DataSyncService {
                                                        .limit(1) as [DriveSessionType];
         if (!activeDrivingSession) {
           activeDrivingSession = <DriveSessionType>await DriveSession.create({
-            id_s,
             vehicle,
             start_date: vehicleData.drive_state.timestamp,
             end_date: vehicleData.drive_state.timestamp
@@ -118,13 +116,13 @@ export class DataSyncService {
       vehicle.charge_limit_soc = vehicleData.charge_state.charge_limit_soc;
       vehicle.state = vehicleStatus;
       vehicle.username = this.username;
-      return Vehicle.updateOne({id_s}, vehicle);
+      return Vehicle.updateOne({vin}, vehicle);
     }
   }
 
   private updateVehicles(vehicleList: [IVehicle]): void {
     vehicleList.forEach(async vehicle => {
-      const exists = await Vehicle.exists({id_s: vehicle.id_s});
+      const exists = await Vehicle.exists({vin: vehicle.vin});
       if (!exists) {
         await Vehicle.create(vehicle);
       }
@@ -152,10 +150,8 @@ export class DataSyncService {
 
   private async appendChargeState(session: ChargeSessionType, vehicleData: IVehicleData): Promise<any> {
     if (!session.last || this.hasChanges(session.last, vehicleData)) {
-      const id_s = vehicleData.id_s;
 
       const state = <ChargeStateType>await ChargeState.create({
-        id_s,
         battery_heater_on: vehicleData.charge_state.battery_heater_on || false,
         battery_level: vehicleData.charge_state.battery_level,
         battery_range: vehicleData.charge_state.battery_range,
@@ -229,9 +225,8 @@ export class DataSyncService {
   }
 
   private async appendDriveState(session: DriveSessionType, vehicleData: IVehicleData): Promise<any> {
-    const id_s = vehicleData.id_s;
+    const vin = vehicleData.vin;
     const state = <DriveStateType>await DriveState.create({
-      id_s,
       gps_as_of: vehicleData.drive_state.gps_as_of,
       heading: vehicleData.drive_state.heading,
       latitude: vehicleData.drive_state.latitude,
@@ -275,7 +270,7 @@ export class DataSyncService {
     session.end_date = session.last.timestamp;
     session.distance = session.last.odometer - session.first.odometer;
 
-    const vehicle = <VehicleType>await Vehicle.findOne({id_s});
+    const vehicle = <VehicleType>await Vehicle.findOne({vin});
     if (vehicle) {
       vehicle.odometer = state.odometer;
       vehicle.display_name = vehicleData.display_name;
@@ -283,7 +278,7 @@ export class DataSyncService {
       vehicle.color = vehicleData.vehicle_config.exterior_color;
       vehicle.car_type = vehicleData.vehicle_config.car_type;
       vehicle.timestamp = state.timestamp;
-      await Vehicle.updateOne({id_s}, vehicle);
+      await Vehicle.updateOne({vin}, vehicle);
     }
 
     return DriveSession.updateOne({_id: session._id}, session);

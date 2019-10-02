@@ -26,7 +26,8 @@ const VehicleConfigSchema: Schema = new Schema({
   third_row_seats: {type: String},
   timestamp: {type: Number},
   use_range_badging: {type: Boolean},
-  wheel_type: {type: String}
+  wheel_type: {type: String},
+
 });
 
 export const VehicleConfig = model('VehicleConfig', VehicleConfigSchema);

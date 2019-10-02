@@ -2,7 +2,6 @@ import {Document, model, Schema} from 'mongoose';
 import {IDriveSession} from 'tesla-dashboard-api';
 
 const DriveSessionSchema: Schema = new Schema({
-  id_s: {type: String, required: true},
   start_date: {type: Number, required: true},
   end_date: {type: Number, required: true},
   archived: {type: Boolean},

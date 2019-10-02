@@ -4,7 +4,8 @@ import {
   DriveSession,
   DriveState,
   GuiSettings,
-  SyncPreferences, SyncPreferencesType,
+  SyncPreferences,
+  SyncPreferencesType,
   Vehicle,
   VehicleConfig,
   VehicleType
@@ -18,8 +19,8 @@ export class VehicleService {
   }
 
 
-  async get(id_s: string): Promise<VehicleType | undefined> {
-    const vehicle = await Vehicle.findOne({id_s})
+  async get(vin: string): Promise<VehicleType | undefined> {
+    const vehicle = await Vehicle.findOne({vin})
                                  .populate(['sync_preferences']);
     if (vehicle) {
       return vehicle as VehicleType;
@@ -54,10 +55,10 @@ export class VehicleService {
         delete prefs._id;
       }
       if (!prefs._id) {
-        vehicle.sync_preferences = <SyncPreferencesType> await SyncPreferences.create(prefs);
+        vehicle.sync_preferences = <SyncPreferencesType>await SyncPreferences.create(prefs);
         await Vehicle.updateOne({id_s}, vehicle);
       } else if (!vehicle.sync_preferences || vehicle.sync_preferences._id !== prefs._id) {
-        await SyncPreferences.updateOne({_id:prefs._id}, prefs);
+        await SyncPreferences.updateOne({_id: prefs._id}, prefs);
         vehicle.sync_preferences = prefs;
         await Vehicle.updateOne({id_s}, vehicle);
       }
@@ -65,26 +66,32 @@ export class VehicleService {
     }
   }
 
-  async delete(id_s: string) {
-    if (id_s) {
-      const deletions = await Promise.all([
-        Vehicle.findOneAndDelete({id_s}),
-        ChargeState.deleteMany({id_s}),
-        DriveState.deleteMany({id_s}),
-        GuiSettings.deleteMany({id_s}),
-        VehicleConfig.deleteMany({id_s}),
-        ChargeSession.deleteMany({id_s}),
-        DriveSession.deleteMany({id_s})
-      ]);
+  async delete(vin: string) {
+    if (vin) {
+      const vehicle = await this.get(vin);
+      if (vehicle) {
+        const id_s = vehicle.id_s;
+        const deletions = await Promise.all([
+          Vehicle.findOneAndDelete({vin}),
+          ChargeState.deleteMany({vin}),
+          DriveState.deleteMany({vin}),
+          GuiSettings.deleteMany({id_s}),
+          VehicleConfig.deleteMany({id_s}),
+          ChargeSession.deleteMany({vehicle}),
+          DriveSession.deleteMany({vehicle})
+        ]);
+        // @ts-ignore
+        return deletions.reduce((acc, cur) => acc + (cur && cur.deletedCount || 0), 0);
 
-      // @ts-ignore
-      return deletions.reduce((acc, cur) => acc + (cur && cur.deletedCount || 0), 0);
+      }
+      return 0;
     }
   }
 
 
   async findAll(): Promise<[VehicleType] | undefined> {
-    const vehicles = await Vehicle.find().populate(['sync_preferences']);
+    const vehicles = await Vehicle.find()
+                                  .populate(['sync_preferences']);
     if (vehicles) {
       return vehicles as [VehicleType];
     }

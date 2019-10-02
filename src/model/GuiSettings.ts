@@ -3,7 +3,7 @@ import {IGuiSettings} from 'tesla-dashboard-api';
 
 
 const GuiSettingsSchema: Schema = new Schema({
-  id_s: {type: String, required: true},
+  vehicle: {type: Schema.Types.ObjectId, ref: 'Vehicle'},
   gui_24_hour_time: {type: Boolean},
   gui_charge_rate_units: {type: String},
   gui_distance_units: {type: String},

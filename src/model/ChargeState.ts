@@ -3,8 +3,6 @@ import {IChargeState} from 'tesla-dashboard-api';
 
 
 const ChargeStateSchema: Schema = new Schema({
-  id_s: {type: String, required: true},
-  vehicle_id: {type: Number},
   is_key_state: {type: Boolean},
   battery_heater_on: {type: Boolean},
   battery_level: {type: Number},

@@ -37,11 +37,11 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s',
+      path: '/vehicle/:vin',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const id_s = req.params.id_s;
-        const vehicle = await services.vs.get(id_s);
+        const vin = req.params.vin;
+        const vehicle = await services.vs.get(vin);
         return res.status(OK)
                   .json(vehicle);
 
@@ -49,22 +49,22 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s/sync',
+      path: '/vehicle/:vin/sync',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const id_s = req.params.id_s;
+        const vin = req.params.vin;
         // TODO: get sync service status and return
-        const status = services.ssm.status(id_s);
+        const status = services.ssm.status(vin);
         return res.status(OK)
                   .send(status);
       }
     },
     {
-      path: '/vehicle/:id_s/sync',
+      path: '/vehicle/:vin/sync',
       method: 'put',
       handler: async (req: Request, res: Response) => {
-        const id_s = req.params.id_s;
-        const vehicle = await services.vs.get(id_s);
+        const vin = req.params.vin;
+        const vehicle = await services.vs.get(vin);
 
         if (vehicle) {
           const prefs = req.body as ISyncPreferences;
@@ -81,7 +81,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s',
+      path: '/vehicle/:vin',
       method: 'put',
       handler: async (req: Request, res: Response) => {
         const vehicle = await services.vs.create(req.body);
@@ -90,17 +90,17 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s',
+      path: '/vehicle/:vin',
       method: 'delete',
       handler: async (req: Request, res: Response) => {
-        const id_s = req.params.id_s;
-        if (id_s) {
-          const deletedCount = await services.vs.delete(id_s);
+        const vin = req.params.vin;
+        if (vin) {
+          const deletedCount = await services.vs.delete(vin);
           return res.status(OK)
                     .send(`vehicle and data deleted ${deletedCount} documents`);
         } else {
           return res.status(BAD_REQUEST)
-                    .send('Vehicle ID is required to be provided as :id_s');
+                    .send('VIN is required');
         }
       }
     },
@@ -108,18 +108,20 @@ export function getVehicleRoutes(services: any): Route[] {
 
     ///// Sessions (Drive+Charge)
     {
-      path: '/vehicle/:id_s/session',
+      path: '/vehicle/:vin/session',
       method: 'get',
       handler: async (req: Request, res: Response) => {
         const limit = req.query.limit && Number(req.query.limit) || 1;
-        const driveSessions = await DriveSession.find({id_s: req.params.id_s})
+        const {vin} = req.params;
+        const vehicle = await services.vs.get(vin);
+        const driveSessions = await DriveSession.find({vehicle})
                                                 .sort({$natural: -1})
                                                 .limit(limit)
-                                                .populate(['first', 'last']);
-        const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
+                                                .populate(['first', 'last', 'vehicle']);
+        const chargeSessions = await ChargeSession.find({vehicle})
                                                   .sort({$natural: -1})
                                                   .limit(limit)
-                                                  .populate(['first', 'last']);
+                                                  .populate(['first', 'last', 'vehicle']);
         const sessions = driveSessions.concat(chargeSessions)
                                       // @ts-ignore
                                       .sort((a: IVehicleSession, b: IVehicleSession) => b.start_date - a.start_date)// reverse sort
@@ -135,7 +137,7 @@ export function getVehicleRoutes(services: any): Route[] {
     },
 
     {
-      path: '/vehicle/:id_s/session/:_id/tag/:tag',
+      path: '/vehicle/:vin/session/:_id/tag/:tag',
       method: 'post',
       handler: async (req: Request, res: Response) => {
         const {_id, tag} = req.params;
@@ -159,7 +161,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s/session/:_id/tag/:tag',
+      path: '/vehicle/:vin/session/:_id/tag/:tag',
       method: 'delete',
       handler: async (req: Request, res: Response) => {
         const {_id, tag} = req.params;
@@ -186,13 +188,14 @@ export function getVehicleRoutes(services: any): Route[] {
 
     ///// DRIVING
     {
-      path: '/vehicle/:id_s/drive',
+      path: '/vehicle/:vin/drive',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const driveSessions = await DriveSession.find({id_s: req.params.id_s})
+        const vehicle = await services.vs.get(req.params.vin);
+        const driveSessions = await DriveSession.find({vehicle})
                                                 .sort({$natural: -1})
                                                 .limit(req.query.limit && Number(req.query.limit) || 1)
-                                                .populate(['first', 'last']);
+                                                .populate(['first', 'last', 'vehicle']);
         if (driveSessions.length) {
           return res.status(OK)
                     .json(driveSessions);
@@ -203,10 +206,10 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s/drive/:drive_id',
+      path: '/vehicle/:vin/drive/:drive_id',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const driveStates = await DriveState.find({id_s: req.params.id_s, driveSession: req.params.drive_id})
+        const driveStates = await DriveState.find({driveSession: req.params.drive_id})
                                             .sort({$natural: 1});
         if (driveStates.length) {
           return res.status(OK)
@@ -218,7 +221,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s/drive/:drive_id',
+      path: '/vehicle/:vin/drive/:drive_id',
       method: 'delete',
       handler: async (req: Request, res: Response) => {
         await DriveSession.findOneAndDelete({_id: req.params.drive_id});
@@ -230,13 +233,14 @@ export function getVehicleRoutes(services: any): Route[] {
 
     /////// CHARGING
     {
-      path: '/vehicle/:id_s/charge',
+      path: '/vehicle/:vin/charge',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const chargeSessions = await ChargeSession.find({id_s: req.params.id_s})
+        const vehicle = await services.vs.get(req.params.vin);
+        const chargeSessions = await ChargeSession.find({vehicle})
                                                   .sort({$natural: -1})
                                                   .limit(req.query.limit && Number(req.query.limit) || 1)
-                                                  .populate(['first', 'last']);
+                                                  .populate(['first', 'last', 'vehicle']);
         if (chargeSessions.length) {
           return res.status(OK)
                     .json(chargeSessions);
@@ -247,10 +251,10 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s/charge/:charge_id',
+      path: '/vehicle/:vin/charge/:charge_id',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const chargeStates = await ChargeState.find({id_s: req.params.id_s, chargeSession: req.params.charge_id})
+        const chargeStates = await ChargeState.find({chargeSession: req.params.charge_id})
                                               .sort({$natural: 1});
         if (chargeStates.length) {
           return res.status(OK)
@@ -262,7 +266,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s/charge/:charge_id',
+      path: '/vehicle/:vin/charge/:charge_id',
       method: 'delete',
       handler: async (req: Request, res: Response) => {
         await ChargeSession.findOneAndDelete({_id: req.params.charge_id});
@@ -271,7 +275,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s/session/merge',
+      path: '/vehicle/:vin/session/merge',
       method: 'post',
       handler: async (req: Request, res: Response) => {
         const sessionIds = req.body.sessionIds as [string];
@@ -287,7 +291,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id_s/session/:sessionId/archive',
+      path: '/vehicle/:vin/session/:sessionId/archive',
       method: 'post',
       handler: async (req: Request, res: Response) => {
         // get the session

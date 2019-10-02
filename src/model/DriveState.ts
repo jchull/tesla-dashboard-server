@@ -3,8 +3,6 @@ import {IDriveState} from 'tesla-dashboard-api';
 
 
 const DriveStateSchema: Schema = new Schema({
-  id_s: {type: String, required: true},
-  is_key_state: {type: Boolean},
   gps_as_of: {type: Number},
   heading: {type: Number},
   latitude: {type: Number},

@@ -2,7 +2,6 @@ import {Document, model, Schema} from 'mongoose';
 import {IChargeSession} from 'tesla-dashboard-api';
 
 const ChargeSessionSchema: Schema = new Schema({
-  id_s: {type: String, required: true},
   start_date: {type: Number, required: true},
   end_date: {type: Number},
   archived: {type: Boolean},
