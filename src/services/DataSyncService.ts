@@ -38,16 +38,16 @@ export class DataSyncService {
     if (vehicleData) {
       console.log(vehicleData);
 
-      const {state, id_s} = vehicleData;
+      const {vin, id_s} = vehicleData;
       const vehicleStatus = this.findVehicleState(vehicleData);
       console.log(`${vehicleData.display_name} is currently ${vehicleStatus}`);
 
-      const vehicle = <VehicleType>await Vehicle.findOne({id_s});
+      const vehicle = <VehicleType>await Vehicle.findOne({vin});
 
       if (this.isCharging(vehicleData)) {
         // If this vehicle has a ChargeSession updated in the last 15 minutes, consider it the same charge
         let [activeChargingSession] = await ChargeSession.find({
-                                                           id_s,
+                                                           vehicle,
                                                            end_date: {
                                                              $gte: new Date(vehicleData.charge_state.timestamp - (60 * 15 * 1000))
                                                            }
@@ -63,10 +63,11 @@ export class DataSyncService {
 
           activeChargingSession = <ChargeSessionType>await ChargeSession.create({
             id_s,
+            vehicle,
             start_date: vehicleData.charge_state.timestamp,
             end_date: vehicleData.charge_state.timestamp,
             latitude: vehicleData.drive_state.latitude,
-            longitude: vehicleData.drive_state.longitude
+            longitude: vehicleData.drive_state.longitude,
           });
 
           // TODO: when new charging session started, any cleanup to last session?
@@ -80,7 +81,7 @@ export class DataSyncService {
       } else if (this.isDriving(vehicleData)) {
         // If this vehicle has an a DriveSession updated in the last 15 minutes, consider it the same drive
         let [activeDrivingSession] = await DriveSession.find({
-                                                         id_s,
+                                                         vehicle,
                                                          end_date: {
                                                            $gte: new Date(vehicleData.drive_state.timestamp - (60 * 15 * 1000))
                                                          }
@@ -90,6 +91,7 @@ export class DataSyncService {
         if (!activeDrivingSession) {
           activeDrivingSession = <DriveSessionType>await DriveSession.create({
             id_s,
+            vehicle,
             start_date: vehicleData.drive_state.timestamp,
             end_date: vehicleData.drive_state.timestamp
           });

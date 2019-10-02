@@ -9,8 +9,8 @@ const DriveSessionSchema: Schema = new Schema({
   distance: {type: Number},
   tags: {type: [String]},
   first: {type: Schema.Types.ObjectId, ref: 'DriveState'},
-  last: {type: Schema.Types.ObjectId, ref: 'DriveState'}
-
+  last: {type: Schema.Types.ObjectId, ref: 'DriveState'},
+  vehicle: {type: Schema.Types.ObjectId, ref: 'Vehicle'}
 });
 
 export const DriveSession = model('DriveSession', DriveSessionSchema);

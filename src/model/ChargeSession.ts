@@ -31,7 +31,8 @@ const ChargeSessionSchema: Schema = new Schema({
   trip_charging: {type: Boolean},
   tags: {type: [String]},
   first: {type: Schema.Types.ObjectId, ref: 'ChargeState'},
-  last: {type: Schema.Types.ObjectId, ref: 'ChargeState'}
+  last: {type: Schema.Types.ObjectId, ref: 'ChargeState'},
+  vehicle: {type: Schema.Types.ObjectId, ref: 'Vehicle'}
 });
 
 export const ChargeSession = model('ChargeSession', ChargeSessionSchema);
