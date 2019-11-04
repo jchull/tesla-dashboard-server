@@ -193,7 +193,7 @@ export function getVehicleRoutes(services: any): Route[] {
       handler: async (req: Request, res: Response) => {
         const vehicle = await services.vs.get(req.params.vin);
         const driveSessions = await DriveSession.find({vehicle})
-                                                .sort({$natural: -1})
+                                                .sort({timestamp: -1})
                                                 .limit(req.query.limit && Number(req.query.limit) || 1)
                                                 .populate(['first', 'last', 'vehicle']);
         if (driveSessions.length) {
@@ -210,7 +210,7 @@ export function getVehicleRoutes(services: any): Route[] {
       method: 'get',
       handler: async (req: Request, res: Response) => {
         const driveStates = await DriveState.find({driveSession: req.params.drive_id})
-                                            .sort({$natural: 1});
+                                            .sort({timestamp: 1});
         if (driveStates.length) {
           return res.status(OK)
                     .json(driveStates);
@@ -218,15 +218,6 @@ export function getVehicleRoutes(services: any): Route[] {
           return res.status(NOT_FOUND)
                     .end();
         }
-      }
-    },
-    {
-      path: '/vehicle/:vin/drive/:drive_id',
-      method: 'delete',
-      handler: async (req: Request, res: Response) => {
-        await DriveSession.findOneAndDelete({_id: req.params.drive_id});
-        return res.status(OK)
-                  .end();
       }
     },
 
@@ -238,7 +229,7 @@ export function getVehicleRoutes(services: any): Route[] {
       handler: async (req: Request, res: Response) => {
         const vehicle = await services.vs.get(req.params.vin);
         const chargeSessions = await ChargeSession.find({vehicle})
-                                                  .sort({$natural: -1})
+                                                  .sort({timestamp: -1})
                                                   .limit(req.query.limit && Number(req.query.limit) || 1)
                                                   .populate(['first', 'last', 'vehicle']);
         if (chargeSessions.length) {
@@ -255,7 +246,7 @@ export function getVehicleRoutes(services: any): Route[] {
       method: 'get',
       handler: async (req: Request, res: Response) => {
         const chargeStates = await ChargeState.find({chargeSession: req.params.charge_id})
-                                              .sort({$natural: 1});
+                                              .sort({timestamp: 1});
         if (chargeStates.length) {
           return res.status(OK)
                     .json(chargeStates);
@@ -263,15 +254,6 @@ export function getVehicleRoutes(services: any): Route[] {
           return res.status(NOT_FOUND)
                     .end();
         }
-      }
-    },
-    {
-      path: '/vehicle/:vin/charge/:charge_id',
-      method: 'delete',
-      handler: async (req: Request, res: Response) => {
-        await ChargeSession.findOneAndDelete({_id: req.params.charge_id});
-        return res.status(OK)
-                  .end();
       }
     },
     {
@@ -299,6 +281,35 @@ export function getVehicleRoutes(services: any): Route[] {
 
         return res.status(OK)
                   .end();
+      }
+    },
+
+    {
+      path: '/vehicle/:vin/session/:sessionId',
+      method: 'delete',
+      handler: async (req: Request, res: Response) => {
+        const _id = req.params.sessionId;
+        const deleteCount = await DriveSession.deleteOne({_id});
+        if (deleteCount.ok) {
+          const deleteItemCount = await DriveState.deleteMany({driveSession: _id});
+          if(deleteItemCount.ok){
+            const total = (deleteCount.deletedCount || 0) + (deleteItemCount.deletedCount || 0);
+            return res.status(OK)
+                .json(total);
+          }
+        } else {
+          const deleteCount = await ChargeSession.deleteOne({_id});
+          if (deleteCount.ok) {
+            const deleteItemCount = await ChargeState.deleteMany({chargeSession: _id});
+            if(deleteItemCount.ok){
+              const total = (deleteCount.deletedCount || 0) + (deleteItemCount.deletedCount || 0);
+              return res.status(OK)
+                  .json(total);
+            }
+          }
+        }
+        return res.status(INTERNAL_SERVER_ERROR)
+            .end();
       }
     }
   ] as Route[];
