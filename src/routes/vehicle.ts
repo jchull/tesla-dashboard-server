@@ -293,7 +293,7 @@ export function getVehicleRoutes(services: any): Route[] {
         if (deleteCount.ok) {
           const deleteItemCount = await DriveState.deleteMany({driveSession: _id});
           if(deleteItemCount.ok){
-            const total = (deleteCount.deletedCount || 0) + (deleteItemCount.deletedCount || 0);
+            const total = (deleteCount.n || 0) + (deleteItemCount.n || 0);
             return res.status(OK)
                 .json(total);
           }
@@ -302,7 +302,7 @@ export function getVehicleRoutes(services: any): Route[] {
           if (deleteCount.ok) {
             const deleteItemCount = await ChargeState.deleteMany({chargeSession: _id});
             if(deleteItemCount.ok){
-              const total = (deleteCount.deletedCount || 0) + (deleteItemCount.deletedCount || 0);
+              const total = (deleteCount.n || 0) + (deleteItemCount.n || 0);
               return res.status(OK)
                   .json(total);
             }
