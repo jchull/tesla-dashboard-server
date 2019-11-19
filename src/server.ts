@@ -13,12 +13,11 @@ applyRoutes(getRoutes(services), router);
 
 PersistenceService.getConfiguration()
     .then(conf => {
-      const server = createServer(router);
-      server.listen(conf.apiPort, () =>
-          console.log(`Server is running at http://localhost:${conf.apiPort} ...`));
+        const server = createServer(router);
+        server.listen(conf.apiPort, () =>
+            console.log(`API is running on port ${conf.apiPort}`));
 
-      // load sync services which will start up workers for any configured sync instances
-      services.ssm.load();
+        // load sync services which will start up workers for any configured sync instances
+        services.ssm.load();
     });
-
 
