@@ -3,6 +3,8 @@ const path = require('path');
 
 // Set default to "development"
 const nodeEnv = process.env.ENV_FILE || 'development';
+console.log(`Environment: ${nodeEnv}`);
+
 const result2 = dotenv.config({
     path: path.resolve(__dirname,`${nodeEnv}.env`),
 });

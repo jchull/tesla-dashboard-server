@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "postinstall": "npm link tesla-dashboard-api",
-    "dev": "tsc-watch --onSuccess \"node --experimental-worker -r ./env ./dist/server.js\"",
+    "dev": "tsc-watch --onSuccess \"node -r ./env ./dist/server.js\"",
     "clean": "rimraf dist",
     "deploy": "docker build -t tesla-dashboard-server .",
-    "poll": "npm run build && node --experimental-worker -r ./env ./dist/sync.js jchull",
+    "poll": "npm run build && node -r ./env ./dist/sync.js jchull",
     "build": "tsc",
-    "start": "node --experimental-worker -r ./env ./dist/server.js"
+    "start": "node -r ./env ./dist/server.js"
   },
   "dependencies": {
     "axios": "^0.19.0",
