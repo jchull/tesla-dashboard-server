@@ -27,13 +27,25 @@ export class VehicleService {
     }
   }
 
-  async findMy(username: string): Promise<[VehicleType] | undefined> {
+  async getById(id: string): Promise<VehicleType | undefined> {
+    const vehicle = await Vehicle.findOne({_id: id})
+                                 .populate(['sync_preferences']);
+    if (vehicle) {
+      return vehicle as VehicleType;
+    }
+  }
+
+  async findMy(username: string): Promise<VehicleType[] | undefined> {
     const vehicles = await Vehicle.find({username})
                                   .populate(['sync_preferences'])
                                   .sort({$natural: -1});
     if (vehicles) {
       return vehicles as [VehicleType];
     }
+  }
+
+  async filteredSessions(filters:any){
+
   }
 
   async create(vehicle: IVehicle): Promise<VehicleType | undefined> {
@@ -66,7 +78,15 @@ export class VehicleService {
     }
   }
 
-  async delete(vin: string) {
+  async deleteById(id: string) {
+    const vehicle = await this.getById(id);
+    if(vehicle){
+      return this.delete(vehicle.vin);
+    }
+    return 0;
+  }
+
+    async delete(vin: string) {
     if (vin) {
       const vehicle = await this.get(vin);
       if (vehicle) {

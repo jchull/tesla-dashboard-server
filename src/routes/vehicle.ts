@@ -37,11 +37,11 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:vin',
+      path: '/vehicle/:id',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const vin = req.params.vin;
-        const vehicle = await services.vs.get(vin);
+        const {id} = req.params;
+        const vehicle = await services.vs.getById(id);
         return res.status(OK)
                   .json(vehicle);
 
@@ -60,7 +60,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:vin/sync',
+      path: '/vehicle/:id/sync',
       method: 'put',
       handler: async (req: Request, res: Response) => {
         const vin = req.params.vin;
@@ -81,7 +81,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:vin',
+      path: '/vehicle/:id',
       method: 'put',
       handler: async (req: Request, res: Response) => {
         const vehicle = await services.vs.create(req.body);
@@ -90,12 +90,12 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:vin',
+      path: '/vehicle/:id',
       method: 'delete',
       handler: async (req: Request, res: Response) => {
-        const vin = req.params.vin;
-        if (vin) {
-          const deletedCount = await services.vs.delete(vin);
+        const {id} = req.params;
+        if (id) {
+          const deletedCount = await services.vs.deleteById(id);
           return res.status(OK)
                     .send(`vehicle and data deleted ${deletedCount} documents`);
         } else {
@@ -108,12 +108,12 @@ export function getVehicleRoutes(services: any): Route[] {
 
     ///// Sessions (Drive+Charge)
     {
-      path: '/vehicle/:vin/session',
+      path: '/vehicle/:id/session',
       method: 'get',
       handler: async (req: Request, res: Response) => {
         const limit = req.query.limit && Number(req.query.limit) || 1;
-        const {vin} = req.params;
-        const vehicle = await services.vs.get(vin);
+        const {id} = req.params;
+        const vehicle = await services.vs.getById(id);
         const driveSessions = await DriveSession.find({vehicle})
                                                 .sort({$natural: -1})
                                                 .limit(limit)
@@ -137,21 +137,51 @@ export function getVehicleRoutes(services: any): Route[] {
     },
 
     {
-      path: '/vehicle/:vin/session/:_id/tag/:tag',
+      path: '/vehicle/:id/session',
       method: 'post',
       handler: async (req: Request, res: Response) => {
-        const {_id, tag} = req.params;
-        const driveSession = <DriveSessionType>await DriveSession.findOne({_id});
+        //const limit = req.query.limit && Number(req.query.limit) || 1;
+        //const {vin} = req.params;
+        const {filters} = req.body;
+        const sessions = await services.vs.filteredSessions(filters);
+        // const driveSessions = await DriveSession.find({vehicle})
+        //                                         .sort({$natural: -1})
+        //                                         .limit(limit)
+        //                                         .populate(['first', 'last', 'vehicle']);
+        // const chargeSessions = await ChargeSession.find({vehicle})
+        //                                           .sort({$natural: -1})
+        //                                           .limit(limit)
+        //                                           .populate(['first', 'last', 'vehicle']);
+        // const sessions = driveSessions.concat(chargeSessions)
+        //                               // @ts-ignore
+        //                               .sort((a: IVehicleSession, b: IVehicleSession) => b.start_date - a.start_date)// reverse sort
+        //                               .slice(0, limit);
+        if (sessions.length) {
+          return res.status(OK)
+                    .json(sessions);
+        } else {
+          return res.status(INTERNAL_SERVER_ERROR)
+                    .end();
+        }
+      }
+    },
+
+    {
+      path: '/vehicle/:id/session/:sessionId/tag/:tag',
+      method: 'post',
+      handler: async (req: Request, res: Response) => {
+        const {sessionId, tag} = req.params;
+        const driveSession = <DriveSessionType>await DriveSession.findOne({_id: sessionId});
         if (driveSession && !driveSession.tags.includes(tag)) {
           driveSession.tags.push(tag);
-          await DriveSession.updateOne({_id}, driveSession);
+          await DriveSession.updateOne({_id: sessionId}, driveSession);
           return res.status(OK)
                     .json(driveSession.tags);
         } else {
-          const chargeSession = <ChargeSessionType>await ChargeSession.findOne({_id});
+          const chargeSession = <ChargeSessionType>await ChargeSession.findOne({_id: sessionId});
           if (chargeSession && !chargeSession.tags.includes(tag)) {
             chargeSession.tags.push(tag);
-            await ChargeSession.updateOne({_id}, chargeSession);
+            await ChargeSession.updateOne({_id:sessionId}, chargeSession);
             return res.status(OK)
                       .json(chargeSession.tags);
           }
@@ -161,21 +191,21 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:vin/session/:_id/tag/:tag',
+      path: '/vehicle/:id/session/:sessionId/tag/:tag',
       method: 'delete',
       handler: async (req: Request, res: Response) => {
-        const {_id, tag} = req.params;
-        const driveSession = <DriveSessionType>await DriveSession.findOne({_id});
+        const {sessionId, tag} = req.params;
+        const driveSession = <DriveSessionType>await DriveSession.findOne({_id: sessionId});
         if (driveSession && driveSession.tags.includes(tag)) {
           driveSession.tags.splice(driveSession.tags.indexOf(tag), 1);
-          await DriveSession.updateOne({_id}, driveSession);
+          await DriveSession.updateOne({sessionId}, driveSession);
           return res.status(OK)
                     .json(driveSession.tags);
         } else {
-          const chargeSession = <ChargeSessionType>await ChargeSession.findOne({_id});
+          const chargeSession = <ChargeSessionType>await ChargeSession.findOne({_id: sessionId});
           if (chargeSession && chargeSession.tags.includes(tag)) {
             chargeSession.tags.slice(chargeSession.tags.indexOf(tag), 1);
-            await ChargeSession.updateOne({_id}, chargeSession);
+            await ChargeSession.updateOne({sessionId}, chargeSession);
             return res.status(OK)
                       .json(chargeSession.tags);
           }
@@ -206,18 +236,25 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:vin/drive/:drive_id',
+      path: '/session/:sessionId',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const driveStates = await DriveState.find({driveSession: req.params.drive_id})
+        const {sessionId} = req.params;
+        const driveStates = await DriveState.find({driveSession: sessionId})
                                             .sort({timestamp: 1});
         if (driveStates.length) {
           return res.status(OK)
                     .json(driveStates);
         } else {
-          return res.status(NOT_FOUND)
-                    .end();
+          const chargeStates = await  ChargeState.find({chargeSession: sessionId})
+                                                     .sort({timestamp: 1});
+          if(chargeStates.length){
+            return res.status(OK)
+                      .json(chargeStates);
+          }
         }
+        return res.status(NOT_FOUND)
+                  .end();
       }
     },
 

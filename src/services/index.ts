@@ -14,6 +14,10 @@ const publicKey = fs.readFileSync('./env/key.pub', 'utf8');
 
 jwt({publicKey, privateKey, ttl: 1000 * 60 * 60 * 24});
 
+if(!envConfig.DB_CONN){
+  console.error("---> DB_CONN not set!!!");
+}
+
 
 // @ts-ignore
 const db = new PersistenceService(envConfig.DB_CONN);

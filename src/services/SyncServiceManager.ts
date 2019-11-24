@@ -29,17 +29,18 @@ export class SyncServiceManager {
     if (vehicles) {
       console.log(`Checking sync status for ${vehicles.length} vehicles`);
       vehicles.forEach(vehicle => {
-        if (vehicle.sync_preferences && vehicle.sync_preferences.enabled && vehicle.username) {
-          const workerData = {username: vehicle.username, id_s: vehicle.id_s};
-          const worker = new Worker(workerPath, {workerData});
-          worker.on('message', this.messageHandler(vehicle));
-          worker.on('online', this.initHandler(vehicle));
-          worker.on('exit', this.exitHandler(vehicle));
-          worker.on('error', this.errorHandler(vehicle));
-
-          this.syncServices.set(vehicle.id_s, {status: 'UNINITIALIZED', worker});
-
-        }
+        console.log('Not enabled for vehicle');
+        // if (vehicle.sync_preferences && vehicle.sync_preferences.enabled && vehicle.username) {
+        //   const workerData = {username: vehicle.username, id_s: vehicle.id_s};
+        //   const worker = new Worker(workerPath, {workerData});
+        //   worker.on('message', this.messageHandler(vehicle));
+        //   worker.on('online', this.initHandler(vehicle));
+        //   worker.on('exit', this.exitHandler(vehicle));
+        //   worker.on('error', this.errorHandler(vehicle));
+        //
+        //   this.syncServices.set(vehicle.id_s, {status: 'UNINITIALIZED', worker});
+        //
+        // }
       });
     }
   }
