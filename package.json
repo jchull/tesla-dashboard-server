@@ -9,7 +9,8 @@
     "deploy": "docker build -t tesla-dashboard-server .",
     "poll": "npm run build && node -r ./env ./dist/sync.js jchull",
     "build": "tsc",
-    "start": "node -r ./env ./dist/server.js"
+    "start": "node -r ./env ./dist/server.js",
+    "lint": "eslint './src/**/*.{ts,tsx}'"
   },
   "dependencies": {
     "axios": "^0.19.0",
@@ -58,6 +59,9 @@
     "@types/morgan": "^1.7.37",
     "@types/node": "^12.7.2",
     "@types/randomstring": "^1.1.6",
+    "@typescript-eslint/eslint-plugin": "^2.9.0",
+    "@typescript-eslint/parser": "^2.9.0",
+    "babel-eslint": "^10.0.3",
     "eslint": "^6.3.0",
     "find": "^0.3.0",
     "fs-extra": "^8.1.0",
