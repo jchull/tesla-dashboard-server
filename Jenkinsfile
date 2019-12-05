@@ -1,6 +1,8 @@
 pipeline {
     agent {
-        dockerfile true
+        dockerfile {
+                args '-v /tmp:/tmp -u node -p 3000:3000'
+            }
     }
     environment {
             CI = 'true'
