@@ -1,6 +1,5 @@
-import {Document, model, Schema} from 'mongoose';
-import {IVehicle} from 'tesla-dashboard-api';
-
+import {model, Schema, Document} from 'mongoose';
+import {Vehicle as Product} from 'tesla-dashboard-api';
 
 const VehicleSchema: Schema = new Schema({
   id_s: {type: String, required: true, unique: true},
@@ -26,6 +25,6 @@ const VehicleSchema: Schema = new Schema({
   sync_state: {type: String}
 });
 
-export const Vehicle = model('Vehicle', VehicleSchema);
-export type VehicleType = IVehicle & Document;
+export const Vehicle = model<Product & Document>('Vehicle', VehicleSchema);
+export type VehicleType = Product & Document;
 

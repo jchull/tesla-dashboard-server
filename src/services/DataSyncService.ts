@@ -8,11 +8,11 @@ import {
   DriveSession,
   DriveSessionType,
   DriveState,
-  DriveStateType,
+  DriveStateType, TeslaAccountType,
   Vehicle,
   VehicleType
 } from '../model';
-import {IChargeState, ITeslaAccount, IVehicle, IVehicleData} from 'tesla-dashboard-api';
+import {VehicleData, Vehicle as Product, TeslaAccount as ITeslaAccount, ChargeState as IChargeState} from 'tesla-dashboard-api';
 
 export class DataSyncService {
   private config: ConfigurationType;
@@ -34,7 +34,7 @@ export class DataSyncService {
 
   };
 
-  public async updateVehicleData(vehicleData: IVehicleData): Promise<void> {
+  public async updateVehicleData(vehicleData: VehicleData): Promise<void> {
     if (vehicleData) {
       console.log(vehicleData);
 
@@ -120,7 +120,7 @@ export class DataSyncService {
     }
   }
 
-  private updateVehicles(vehicleList: [IVehicle]): void {
+  private updateVehicles(vehicleList: Product[]): void {
     vehicleList.forEach(async vehicle => {
       const exists = await Vehicle.exists({vin: vehicle.vin});
       if (!exists) {
@@ -131,14 +131,14 @@ export class DataSyncService {
     });
   }
 
-  private getUpdateHandler(vehicleId: String) {
+  private getUpdateHandler(vehicleId: string) {
     return () => {
       return this.ownerService.getState(vehicleId)
                  .then(vehicleData => vehicleData && this.updateVehicleData(vehicleData));
     };
   };
 
-  private hasChanges(existing: IChargeState, incoming: IVehicleData): boolean {
+  private hasChanges(existing: IChargeState, incoming: VehicleData): boolean {
     return existing.charge_energy_added !== incoming.charge_state.charge_energy_added &&
         existing.est_battery_range !== incoming.charge_state.est_battery_range &&
         existing.charger_power !== incoming.charge_state.charger_power &&
@@ -148,10 +148,11 @@ export class DataSyncService {
         existing.charger_actual_current !== incoming.charge_state.charger_actual_current;
   }
 
-  private async appendChargeState(session: ChargeSessionType, vehicleData: IVehicleData): Promise<any> {
+  private async appendChargeState(session: ChargeSessionType, vehicleData: VehicleData): Promise<any> {
+    // @ts-ignore
     if (!session.last || this.hasChanges(session.last, vehicleData)) {
 
-      const state = <ChargeStateType>await ChargeState.create({
+      const state = await ChargeState.create({
         battery_heater_on: vehicleData.charge_state.battery_heater_on || false,
         battery_level: vehicleData.charge_state.battery_level,
         battery_range: vehicleData.charge_state.battery_range,
@@ -224,9 +225,9 @@ export class DataSyncService {
     }
   }
 
-  private async appendDriveState(session: DriveSessionType, vehicleData: IVehicleData): Promise<any> {
+  private async appendDriveState(session: DriveSessionType, vehicleData: VehicleData): Promise<any> {
     const vin = vehicleData.vin;
-    const state = <DriveStateType>await DriveState.create({
+    const state = await DriveState.create({
       gps_as_of: vehicleData.drive_state.gps_as_of,
       heading: vehicleData.drive_state.heading,
       latitude: vehicleData.drive_state.latitude,
@@ -270,7 +271,7 @@ export class DataSyncService {
     session.end_date = session.last.timestamp;
     session.distance = session.last.odometer - session.first.odometer;
 
-    const vehicle = <VehicleType>await Vehicle.findOne({vin});
+    const vehicle = await Vehicle.findOne({vin});
     if (vehicle) {
       vehicle.odometer = state.odometer;
       vehicle.display_name = vehicleData.display_name;
@@ -284,15 +285,15 @@ export class DataSyncService {
     return DriveSession.updateOne({_id: session._id}, session);
   }
 
-  private isCharging(vehicleData: IVehicleData): boolean {
+  private isCharging(vehicleData: VehicleData): boolean {
     return vehicleData.charge_state.charging_state === 'Charging';
   }
 
-  private isDriving(vehicleData: IVehicleData): boolean {
+  private isDriving(vehicleData: VehicleData): boolean {
     return vehicleData.drive_state.shift_state !== null;
   }
 
-  private findVehicleState(vehicleData: IVehicleData): string {
+  private findVehicleState(vehicleData: VehicleData): string {
     if (vehicleData.drive_state.shift_state) {
       return 'Driving';
     }

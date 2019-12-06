@@ -5,7 +5,7 @@ import fs from 'fs';
 import {VehicleService} from './VehicleService';
 import {SyncServiceManager} from './SyncServiceManager';
 import {jwt} from './JwtService';
-import { IConfiguration } from 'tesla-dashboard-api';
+import { Configuration } from 'tesla-dashboard-api';
 
 const envConfig = Object.assign({}, process.env);
 
@@ -22,7 +22,7 @@ if(!envConfig.DB_CONN){
 // @ts-ignore
 const db = new PersistenceService(envConfig.DB_CONN);
 db.connect();
-let appConfig:IConfiguration;
+let appConfig: Configuration;
 PersistenceService.getConfiguration()
     .then(conf => {
       appConfig = conf;

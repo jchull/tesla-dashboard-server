@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {IChargeState} from 'tesla-dashboard-api';
+import {ChargeState as IChargeState} from 'tesla-dashboard-api';
 
 
 const ChargeStateSchema: Schema = new Schema({
@@ -45,6 +45,6 @@ const ChargeStateSchema: Schema = new Schema({
 
 });
 
-export const ChargeState = model('ChargeState', ChargeStateSchema);
+export const ChargeState = model<IChargeState & Document>('ChargeState', ChargeStateSchema);
 export type ChargeStateType = IChargeState & Document;
 

@@ -1,25 +1,25 @@
 import jsonwebtoken, {SignOptions, VerifyOptions} from 'jsonwebtoken';
 import {CookieOptions, Request, Response} from 'express';
-import {IUser} from 'tesla-dashboard-api';
+import {User} from 'tesla-dashboard-api';
 
 let jwtInstance: JwtService;
 
 export const JWT_COOKIE_PROP = 'jwt';
 
-interface IClientData {
+interface ClientData {
   username: string;
   role: number | undefined;
   client: string;
 }
 
-interface IJwtServiceOptions {
+interface JwtServiceOptions {
   publicKey: string;
   privateKey: string;
   ttl: number;
 }
 
 
-export const jwt = (options?: IJwtServiceOptions): JwtService => {
+export const jwt = (options?: JwtServiceOptions): JwtService => {
   if (jwtInstance) {
     return jwtInstance;
   } else if (options) {
@@ -31,11 +31,11 @@ export const jwt = (options?: IJwtServiceOptions): JwtService => {
 
 export class JwtService {
   readonly cookieOptions: CookieOptions;
-  private readonly serviceOptions: IJwtServiceOptions;
+  private readonly serviceOptions: JwtServiceOptions;
   private readonly signOptions: SignOptions;
   private readonly verifyOptions: VerifyOptions;
 
-  constructor(options: IJwtServiceOptions) {
+  constructor(options: JwtServiceOptions) {
     this.signOptions = Object.freeze({
       algorithm: 'RS256',
       expiresIn: '12h',
@@ -58,12 +58,12 @@ export class JwtService {
 
   }
 
-  encode(data: IClientData): string {
+  encode(data: ClientData): string {
     return jsonwebtoken.sign(data, this.serviceOptions.privateKey, this.signOptions);
   }
 
 
-  decode(token: string): IClientData | null {
+  decode(token: string): ClientData | null {
     // @ts-ignore
     const {payload} = jsonwebtoken.decode(token, {complete: true});
     return payload;
@@ -75,7 +75,7 @@ export class JwtService {
 
   }
 
-  cookie(req: Request, res: Response, user: IUser) {
+  cookie(req: Request, res: Response, user: User) {
     const token = this.encode({username: user.username, role: user.role, client: req.ip});
     res.cookie(JWT_COOKIE_PROP, token, this.cookieOptions);
   }

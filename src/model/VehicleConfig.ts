@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {IVehicleConfig} from 'tesla-dashboard-api';
+import {VehicleConfig as IVehicleConfig} from 'tesla-dashboard-api';
 
 
 const VehicleConfigSchema: Schema = new Schema({
@@ -30,6 +30,6 @@ const VehicleConfigSchema: Schema = new Schema({
 
 });
 
-export const VehicleConfig = model('VehicleConfig', VehicleConfigSchema);
+export const VehicleConfig = model<IVehicleConfig & Document>('VehicleConfig', VehicleConfigSchema);
 export type VehicleConfigType = IVehicleConfig & Document;
 

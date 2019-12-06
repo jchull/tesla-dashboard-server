@@ -4,6 +4,7 @@
 import {PersistenceService} from './services/PersistenceService';
 import {DataSyncService} from './services/DataSyncService';
 import {UserService} from './services/UserService';
+import {TeslaAccount as ITeslaAccount} from 'tesla-dashboard-api';
 
 // TODO: get rid of this
 const username = process.argv[2];
@@ -25,7 +26,7 @@ async function start() {
   const config = await PersistenceService.getConfiguration();
   const teslaAccounts = await userService.getTeslaAccounts(username);
   if (teslaAccounts) {
-    teslaAccounts.forEach(teslaAccount => {
+    teslaAccounts.forEach((teslaAccount: ITeslaAccount) => {
       const server = new DataSyncService(config, teslaAccount);
       server.beginPolling(60000);
     });

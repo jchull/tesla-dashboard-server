@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {TeslaAccount, VehicleType} from '../model';
-import {ITeslaAccount, IVehicleData} from 'tesla-dashboard-api';
+import {TeslaAccount as ITeslaAccount, VehicleData} from 'tesla-dashboard-api';
 
 export class TeslaOwnerService {
   endpoint: string;
@@ -68,10 +68,10 @@ export class TeslaOwnerService {
                    'Authorization': `Bearer ${this.teslaAccount.access_token}`
                  }
                }))
-               .then((vehicleListResponse) => vehicleListResponse && vehicleListResponse.data && vehicleListResponse.data.response);
+               .then((vehicleListResponse) => vehicleListResponse?.data?.response);
   }
 
-  getState(id: String): Promise<IVehicleData| undefined> {
+  getState(id: String): Promise<VehicleData| undefined> {
     return this.checkToken()
                .then(() => axios.get(`${this.endpoint}/api/1/vehicles/${id}/vehicle_data`, {
                  headers: {
@@ -80,7 +80,7 @@ export class TeslaOwnerService {
                  }
                }))
                .then((vehicle_data) => {
-                     return vehicle_data && vehicle_data.data && vehicle_data.data.response;
+                     return vehicle_data?.data?.response;
                    },
                    (err) => {
                      const statusCode = err.response.status;
@@ -110,7 +110,7 @@ export class TeslaOwnerService {
                  }
                }))
                .then((nearby_charging_sites) => {
-                     return nearby_charging_sites && nearby_charging_sites.data && nearby_charging_sites.data.response;
+                     return nearby_charging_sites?.data?.response;
                    },
                    (err) => {
                      const statusCode = err.response.status;
@@ -131,6 +131,6 @@ export class TeslaOwnerService {
                    'Authorization': `Bearer ${this.teslaAccount.access_token}`
                  }
                }))
-               .then((vehicleResponse) => vehicleResponse && vehicleResponse.data && vehicleResponse.data.response);
+               .then((vehicleResponse) => vehicleResponse?.data?.response);
   }
 }

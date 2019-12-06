@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {ISpeedLimitMode} from 'tesla-dashboard-api';
+import {SpeedLimitMode as ISpeedLimitMode} from 'tesla-dashboard-api';
 
 const SpeedLimitModeSchema: Schema = new Schema({
   active: {type: Boolean, required: true},
@@ -9,6 +9,6 @@ const SpeedLimitModeSchema: Schema = new Schema({
   pin_code_set: {type: Boolean, required: true}
 });
 
-export const SpeedLimitMode = model('SpeedLimitMode', SpeedLimitModeSchema);
+export const SpeedLimitMode = model<ISpeedLimitMode & Document>('SpeedLimitMode', SpeedLimitModeSchema);
 export type SpeedLimitModeType = ISpeedLimitMode & Document;
 

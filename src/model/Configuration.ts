@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {IConfiguration} from 'tesla-dashboard-api';
+import {Configuration as IConfiguration} from 'tesla-dashboard-api';
 
 const ConfigurationSchema: Schema = new Schema({
   apiPort: {type: Number, required: true, unique: false},
@@ -8,6 +8,6 @@ const ConfigurationSchema: Schema = new Schema({
   teslaClientSecret: {type: String, required: true, unique: false}
 });
 
-export const Configuration = model('Configuration', ConfigurationSchema);
+export const Configuration = model<IConfiguration & Document>('Configuration', ConfigurationSchema);
 export type ConfigurationType = IConfiguration & Document;
 

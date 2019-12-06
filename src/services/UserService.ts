@@ -1,5 +1,5 @@
 import {TeslaAccount, TeslaAccountType, User, UserPreferences, UserType} from '../model';
-import {ITeslaAccount, IUser, UserRoles} from 'tesla-dashboard-api';
+import {TeslaAccount as ITeslaAccount, User as IUser, UserRoles} from 'tesla-dashboard-api';
 import {VehicleService} from './VehicleService';
 
 const { isMainThread } = require("worker_threads");
@@ -14,19 +14,19 @@ export class UserService {
   constructor() {
   }
 
-  sanitizeUser(user: IUser): IUser {
+  sanitizeUser(user: UserType): IUser {
     const {username, email, role} = user;
     return {username, email, role};
   }
 
-  sanitizeTeslaAccount(account: ITeslaAccount): ITeslaAccount {
+  sanitizeTeslaAccount(account: TeslaAccountType): ITeslaAccount {
     const {_id, email, refresh_token, access_token, token_created_at, token_expires_in, username} = account;
     return {_id, email, refresh_token, access_token, token_created_at, token_expires_in, username};
   }
 
 
   async get(username: string): Promise<IUser | undefined> {
-    const user = await User.findOne({username}) as UserType;
+    const user = await User.findOne({username});
     if (user) {
       return this.sanitizeUser(user);
     }
@@ -43,7 +43,7 @@ export class UserService {
       email: user.email,
       pwdHash: hash,
       role: UserRoles.Standard
-    }) as UserType;
+    });
   }
 
   async update(user: IUser): Promise<IUser> {
@@ -56,8 +56,8 @@ export class UserService {
   }
 
   async checkPassword(username: string, password: string): Promise<boolean> {
-    const user = await User.findOne({username}) as UserType;
-    return user && user.pwdHash ? bcrypt.compareSync(password, user.pwdHash) : false;
+    const user = await User.findOne({username});
+    return user?.pwdHash ? bcrypt.compareSync(password, user.pwdHash) : false;
   }
 
   async getPreferences(username: string) {
@@ -65,19 +65,19 @@ export class UserService {
 
   }
 
-  async getTeslaAccounts(username: string, vehicleId?: string) {
-    const accountList = await TeslaAccount.find({username}) as [TeslaAccountType];
-    if (accountList && accountList.length) {
+  async getTeslaAccounts(username: string, vehicleId?: string): Promise<ITeslaAccount[]| undefined> {
+    const accountList = await TeslaAccount.find({username});
+    if (accountList?.length) {
       if (vehicleId) {
         const vehicle = await vs.get(vehicleId);
-        if (vehicle && vehicle.sync_preferences) {
-          const {account_id} = vehicle.sync_preferences;
-          return accountList.filter(account => account_id === account._id)
-                            .map((account: ITeslaAccount) => this.sanitizeTeslaAccount(account));
+        if (vehicle?.sync_preferences) {
+          const {accountId} = vehicle.sync_preferences;
+          return accountList.filter(account => accountId === account._id)
+                            .map((account: TeslaAccountType) => this.sanitizeTeslaAccount(account));
 
         }
       }
-      return accountList.map((account: ITeslaAccount) => this.sanitizeTeslaAccount(account));
+      return accountList.map((account: TeslaAccountType) => this.sanitizeTeslaAccount(account));
     }
   }
 
@@ -86,11 +86,11 @@ export class UserService {
     let updatedAccount;
     if (_id) {
       const result = await TeslaAccount.updateOne({_id}, account, {password: 'delete'});
-      if (result && result.ok === 1) {
-        updatedAccount = await TeslaAccount.findOne({_id}) as TeslaAccountType;
+      if (result?.ok === 1) {
+        updatedAccount = await TeslaAccount.findOne({_id});
       }
     } else {
-      updatedAccount = await TeslaAccount.create(account) as TeslaAccountType;
+      updatedAccount = await TeslaAccount.create(account);
     }
     return updatedAccount && this.sanitizeTeslaAccount(updatedAccount);
 

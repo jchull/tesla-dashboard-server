@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {ISyncPreferences} from 'tesla-dashboard-api';
+import {SyncPreferences as ISyncPreferences} from 'tesla-dashboard-api';
 
 
 const SyncPreferencesSchema: Schema = new Schema({
@@ -17,7 +17,7 @@ const SyncPreferencesSchema: Schema = new Schema({
 
 });
 
-export const SyncPreferences = model('SyncPreferences', SyncPreferencesSchema);
+export const SyncPreferences = model<ISyncPreferences & Document>('SyncPreferences', SyncPreferencesSchema);
 export type SyncPreferencesType = ISyncPreferences & Document;
 
 

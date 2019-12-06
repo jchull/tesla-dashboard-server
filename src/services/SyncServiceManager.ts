@@ -1,6 +1,6 @@
 import {Worker} from 'worker_threads';
 import {VehicleService} from './VehicleService';
-import {IVehicle} from 'tesla-dashboard-api';
+import {Vehicle as Product} from 'tesla-dashboard-api';
 
 const path = require('path');
 const workerPath = path.resolve(__dirname, './SyncWorker.js');
@@ -15,13 +15,13 @@ interface WorkerStatus {
 
 export class SyncServiceManager {
 
-  private syncServices: Map<String, WorkerStatus>;
+  private syncServices: Map<string, WorkerStatus>;
   private vs: VehicleService;
 
   constructor(vs: VehicleService) {
     console.log('Creating new SyncServiceManager');
     this.vs = vs;
-    this.syncServices = new Map<String, WorkerStatus>();
+    this.syncServices = new Map<string, WorkerStatus>();
   }
 
   async load() {
@@ -55,21 +55,21 @@ export class SyncServiceManager {
     }
   }
 
-  private messageHandler(vehicle:IVehicle){
+  private messageHandler(vehicle:Product){
     return (message: any) => {
       console.log(`Vehicle sync for ${vehicle.display_name} sent: ${message}`);
 
     }
   }
 
-  private initHandler(vehicle: IVehicle) {
+  private initHandler(vehicle: Product) {
     return () => {
       console.log(`Vehicle sync for ${vehicle.display_name} : ${vehicle.id_s} has initialized`);
       this.updateStatus(vehicle.id_s, 'INITIALIZED');
     };
   }
 
-  private exitHandler(vehicle: IVehicle) {
+  private exitHandler(vehicle: Product) {
     return () => {
       console.log(`Vehicle sync for ${vehicle.display_name} has exited`);
       if (this.status(vehicle.id_s) !== 'ERRORED') {
@@ -78,7 +78,7 @@ export class SyncServiceManager {
     };
   }
 
-  private errorHandler(vehicle: IVehicle) {
+  private errorHandler(vehicle: Product) {
     return (error: any) => {
       console.log(`Vehicle sync for ${vehicle.display_name} has thrown`, error);
       this.updateStatus(vehicle.id_s, 'ERRORED');

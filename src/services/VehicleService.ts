@@ -10,7 +10,7 @@ import {
   VehicleConfig,
   VehicleType
 } from '../model';
-import {ISyncPreferences, IVehicle} from 'tesla-dashboard-api';
+import {SyncPreferences as ISyncPreferences, Vehicle as Product} from 'tesla-dashboard-api';
 
 
 export class VehicleService {
@@ -23,7 +23,7 @@ export class VehicleService {
     const vehicle = await Vehicle.findOne({vin})
                                  .populate(['sync_preferences']);
     if (vehicle) {
-      return vehicle as VehicleType;
+      return vehicle;
     }
   }
 
@@ -31,7 +31,7 @@ export class VehicleService {
     const vehicle = await Vehicle.findOne({_id: id})
                                  .populate(['sync_preferences']);
     if (vehicle) {
-      return vehicle as VehicleType;
+      return vehicle;
     }
   }
 
@@ -40,7 +40,7 @@ export class VehicleService {
                                   .populate(['sync_preferences'])
                                   .sort({$natural: -1});
     if (vehicles) {
-      return vehicles as [VehicleType];
+      return vehicles;
     }
   }
 
@@ -48,26 +48,26 @@ export class VehicleService {
 
   }
 
-  async create(vehicle: IVehicle): Promise<VehicleType | undefined> {
+  async create(vehicle: Product): Promise<VehicleType | undefined> {
     const newVehicle = await Vehicle.create(vehicle);
     if (newVehicle) {
-      return newVehicle as VehicleType;
+      return newVehicle;
     }
   }
 
-  async update(vehicle: IVehicle): Promise<VehicleType | undefined> {
+  async update(vehicle: Product): Promise<VehicleType | undefined> {
     return Vehicle.updateOne({id_s: vehicle.id_s}, vehicle);
   }
 
 
-  async updateSyncPreferences(vehicle: IVehicle, prefs: ISyncPreferences): Promise<ISyncPreferences | undefined> {
+  async updateSyncPreferences(vehicle: Product, prefs: ISyncPreferences): Promise<ISyncPreferences | undefined> {
     if (vehicle) {
       const id_s = vehicle.id_s;
       if (prefs._id === 'default') {
         delete prefs._id;
       }
       if (!prefs._id) {
-        vehicle.sync_preferences = <SyncPreferencesType>await SyncPreferences.create(prefs);
+        vehicle.sync_preferences = await SyncPreferences.create(prefs);
         await Vehicle.updateOne({id_s}, vehicle);
       } else if (!vehicle.sync_preferences || vehicle.sync_preferences._id !== prefs._id) {
         await SyncPreferences.updateOne({_id: prefs._id}, prefs);
@@ -109,11 +109,11 @@ export class VehicleService {
   }
 
 
-  async findAll(): Promise<[VehicleType] | undefined> {
+  async findAll(): Promise<VehicleType[] | undefined> {
     const vehicles = await Vehicle.find()
                                   .populate(['sync_preferences']);
     if (vehicles) {
-      return vehicles as [VehicleType];
+      return vehicles;
     }
   }
 }

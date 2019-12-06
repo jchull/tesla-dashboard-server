@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {IDriveState} from 'tesla-dashboard-api';
+import {DriveState as IDriveState} from 'tesla-dashboard-api';
 
 
 const DriveStateSchema: Schema = new Schema({
@@ -40,6 +40,6 @@ const DriveStateSchema: Schema = new Schema({
   driveSession: {type: Schema.Types.ObjectId, ref: 'DriveSession'}
 });
 
-export const DriveState = model('DriveState', DriveStateSchema);
+export const DriveState = model<IDriveState & Document>('DriveState', DriveStateSchema);
 export type DriveStateType = IDriveState & Document;
 

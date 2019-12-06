@@ -12,11 +12,11 @@ import {
   Vehicle,
   VehicleType
 } from '../model';
-import {IChargeState, IConfiguration, ISyncPreferences, IVehicle, IVehicleData} from 'tesla-dashboard-api';
 import {PersistenceService} from './PersistenceService';
 import {VehicleService} from './VehicleService';
+import {Configuration, SyncPreferences, VehicleData, Vehicle as Product, ChargeState as IChargeState} from 'tesla-dashboard-api';
 
-let appConfig:IConfiguration;
+let appConfig: Configuration;
 PersistenceService.getConfiguration()
                   .then(conf => {
                     appConfig = conf;
@@ -26,10 +26,10 @@ const vs = new VehicleService();
 
 export class TeslaSyncService {
   private ownerService?: TeslaOwnerService;
-  private syncPrefs?: ISyncPreferences;
+  private syncPrefs?: SyncPreferences;
   private readonly id_s: string;
   private readonly username: string;
-  private readonly appConfig: IConfiguration;
+  private readonly appConfig: Configuration;
 
   constructor(id_s: string, username: string) {
     this.id_s = id_s;
@@ -45,10 +45,10 @@ export class TeslaSyncService {
       }
       console.log(`Starting TeslaSyncService for ${localVehicle}`);
       const teslaAccounts = await TeslaAccount.find({username: this.username, id_s: this.id_s }) as [TeslaAccountType];
-      if (teslaAccounts && teslaAccounts.length === 1) {
+      if (teslaAccounts?.length === 1) {
         this.ownerService = new TeslaOwnerService(this.appConfig.ownerBaseUrl, this.appConfig.teslaClientKey, this.appConfig.teslaClientSecret, teslaAccounts[0]);
 
-        if (this.ownerService && localVehicle.sync_preferences && localVehicle.sync_preferences.enabled) {
+        if (this.ownerService && localVehicle.sync_preferences?.enabled) {
           const vehicle = await this.ownerService.getVehicle(this.id_s);
           if (vehicle) {
             await this.updateVehicle(vehicle);
@@ -63,7 +63,7 @@ export class TeslaSyncService {
   }
 
 
-  public async updateVehicleData(vehicleData: IVehicleData): Promise<void> {
+  public async updateVehicleData(vehicleData: VehicleData): Promise<void> {
     if (vehicleData) {
       const {state, id_s} = vehicleData;
       const vehicleStatus = this.findVehicleState(vehicleData);
@@ -147,8 +147,8 @@ export class TeslaSyncService {
     }
   }
 
-  private async updateVehicle(vehicle: IVehicle): Promise<void> {
-    parentPort && parentPort.postMessage('updating vehicle');
+  private async updateVehicle(vehicle: Product): Promise<void> {
+    parentPort?.postMessage('updating vehicle');
     const exists = await Vehicle.exists({id_s: vehicle.id_s});
     if (!exists) {
       await Vehicle.create(vehicle);
@@ -167,25 +167,25 @@ export class TeslaSyncService {
 
   };
 
-  private scheduleNextUpdateSeconds(vehicleData: IVehicleData): number {
+  private scheduleNextUpdateSeconds(vehicleData: VehicleData): number {
     if (this.syncPrefs) {
       if (this.isCharging(vehicleData) && vehicleData.charge_state.charger_power && vehicleData.charge_state.charger_power > 0) {
         if (vehicleData.charge_state.charger_power < 2) {
-          return this.syncPrefs.charging_pollingIntervalsSeconds[0];
+          return this.syncPrefs.chargingPollingIntervalsSeconds[0];
         } else if (vehicleData.charge_state.charger_power < 20) {
-          return this.syncPrefs.charging_pollingIntervalsSeconds[1];
+          return this.syncPrefs.chargingPollingIntervalsSeconds[1];
         }
         if (vehicleData.charge_state.charger_power >= 20) {
-          return this.syncPrefs.charging_pollingIntervalsSeconds[2];
+          return this.syncPrefs.chargingPollingIntervalsSeconds[2];
         }
       } else if (this.isDriving(vehicleData)) {
-        return this.syncPrefs.driving_pollingIntervalSeconds;
+        return this.syncPrefs.drivingPollingIntervalSeconds;
       }
     }
     return 60;
   }
 
-  private hasChanges(existing: IChargeState, incoming: IVehicleData): boolean {
+  private hasChanges(existing: IChargeState, incoming: VehicleData): boolean {
     return existing.charge_energy_added !== incoming.charge_state.charge_energy_added &&
         existing.est_battery_range !== incoming.charge_state.est_battery_range &&
         existing.charger_power !== incoming.charge_state.charger_power &&
@@ -195,7 +195,8 @@ export class TeslaSyncService {
         existing.charger_actual_current !== incoming.charge_state.charger_actual_current;
   }
 
-  private async appendChargeState(session: ChargeSessionType, vehicleData: IVehicleData): Promise<any> {
+  private async appendChargeState(session: ChargeSessionType, vehicleData: VehicleData): Promise<any> {
+    // @ts-ignore
     if (!session.last || this.hasChanges(session.last, vehicleData)) {
       const id_s = vehicleData.id_s;
 
@@ -274,7 +275,7 @@ export class TeslaSyncService {
     }
   }
 
-  private async appendDriveState(session: DriveSessionType, vehicleData: IVehicleData): Promise<any> {
+  private async appendDriveState(session: DriveSessionType, vehicleData: VehicleData): Promise<any> {
     const id_s = vehicleData.id_s;
     const state = <DriveStateType>await DriveState.create({
       id_s,
@@ -336,15 +337,15 @@ export class TeslaSyncService {
     return DriveSession.updateOne({_id: session._id}, session);
   }
 
-  private isCharging(vehicleData: IVehicleData): boolean {
+  private isCharging(vehicleData: VehicleData): boolean {
     return vehicleData.charge_state.charging_state === 'Charging';
   }
 
-  private isDriving(vehicleData: IVehicleData): boolean {
+  private isDriving(vehicleData: VehicleData): boolean {
     return vehicleData.drive_state.shift_state !== null;
   }
 
-  private findVehicleState(vehicleData: IVehicleData): string {
+  private findVehicleState(vehicleData: VehicleData): string {
     if (vehicleData.drive_state.shift_state) {
       return 'Driving';
     }

@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 import {User} from '../model';
-import {IUserPreferences} from 'tesla-dashboard-api';
+import {UserPreferences} from 'tesla-dashboard-api';
 import {BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNAUTHORIZED} from 'http-status-codes';
 import {ParamsDictionary} from 'express-serve-static-core';
 import {JWT_COOKIE_PROP} from '../services/JwtService';
@@ -88,7 +88,7 @@ export function getUserRoutes(services: any): Route[] {
       path: '/user/:username/prefs',
       method: 'get',
       handler: async (req: Request, res: Response) => {
-        const x = {} as IUserPreferences;
+        const x = {} as UserPreferences;
         res.send('No users');
       }
     },

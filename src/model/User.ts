@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {IUser} from 'tesla-dashboard-api';
+import {User as IUser} from 'tesla-dashboard-api';
 
 const UserSchema: Schema = new Schema({
   username: {type: String, required: true, unique: true},
@@ -11,7 +11,7 @@ const UserSchema: Schema = new Schema({
 
 });
 
-export const User = model('User', UserSchema);
+export const User = model<IUser & Document>('User', UserSchema);
 export type UserType = IUser & Document;
 
 

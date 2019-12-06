@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {IGuiSettings} from 'tesla-dashboard-api';
+import {GuiSettings as IGuiSettings} from 'tesla-dashboard-api';
 
 
 const GuiSettingsSchema: Schema = new Schema({
@@ -14,6 +14,6 @@ const GuiSettingsSchema: Schema = new Schema({
 
 });
 
-export const GuiSettings = model('GuiSettings', GuiSettingsSchema);
+export const GuiSettings = model<IGuiSettings & Document>('GuiSettings', GuiSettingsSchema);
 export type GuiSettingsType = IGuiSettings & Document;
 

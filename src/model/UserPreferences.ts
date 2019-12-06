@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {IUserPreferences} from 'tesla-dashboard-api';
+import {UserPreferences as IUserPreferences} from 'tesla-dashboard-api';
 
 
 const UserPreferencesSchema: Schema = new Schema({
@@ -9,7 +9,7 @@ const UserPreferencesSchema: Schema = new Schema({
   display_tempUnits: {type: String}
 });
 
-export const UserPreferences = model('UserPreferences', UserPreferencesSchema);
+export const UserPreferences = model<IUserPreferences & Document>('UserPreferences', UserPreferencesSchema);
 export type UserPreferencesType = IUserPreferences & Document;
 
 

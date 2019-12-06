@@ -1,5 +1,5 @@
 import {Document, model, Schema} from 'mongoose';
-import {ITeslaAccount} from 'tesla-dashboard-api';
+import {TeslaAccount as ITeslaAccount} from 'tesla-dashboard-api';
 
 
 const TeslaAccountSchema: Schema = new Schema({
@@ -11,7 +11,7 @@ const TeslaAccountSchema: Schema = new Schema({
   access_token: {type: String, required: false}
 });
 
-export const TeslaAccount = model('TeslaAccount', TeslaAccountSchema);
+export const TeslaAccount = model<ITeslaAccount & Document>('TeslaAccount', TeslaAccountSchema);
 export type TeslaAccountType = ITeslaAccount & Document;
 
 
