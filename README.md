@@ -7,3 +7,6 @@ What this project can currently do
 - Hardcoded stuff: 15 minutes session gap, if you stop charging for 15 minutes, new charge session is created, etc
 - Set up: it's really manual right now, but basically: Start a mongodb docker instance, put the connection string in config/.env (see config/sample.env for example)
 Then start the server, create a user using the REST API, then you can start polling. Take a look at the routes, the user route is simple, I prefer to finish the UI to allow creation of accounts, etc
+
+
+docker run -d --privileged -v jenkins_home:/var/jenkins_home -p 8000:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker jenkins/jenkins:lts
