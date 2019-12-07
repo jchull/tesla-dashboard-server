@@ -166,7 +166,28 @@ export function getVehicleRoutes(services: any): Route[] {
     },
 
     {
-      path: '/vehicle/:id/session/:sessionId/tag/:tag',
+      path: '/session/:sessionId/tag',
+      method: 'get',
+      handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        const {sessionId, tag} = req.params;
+        const driveSession = await DriveSession.findOne({_id: sessionId});
+        if (driveSession ) {
+          res.status(OK)
+             .json(driveSession.tags);
+        } else {
+          const chargeSession = await ChargeSession.findOne({_id: sessionId});
+          if (chargeSession) {
+            res.status(OK)
+               .json(chargeSession.tags);
+          } else {
+            res.status(NOT_FOUND)
+               .end();
+          }
+        }
+      }
+    },
+    {
+      path: '/session/:sessionId/tag/:tag',
       method: 'post',
       handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const {sessionId, tag} = req.params;
@@ -191,7 +212,7 @@ export function getVehicleRoutes(services: any): Route[] {
       }
     },
     {
-      path: '/vehicle/:id/session/:sessionId/tag/:tag',
+      path: '/session/:sessionId/tag/:tag',
       method: 'delete',
       handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const {sessionId, tag} = req.params;
