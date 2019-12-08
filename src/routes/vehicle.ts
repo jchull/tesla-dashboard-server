@@ -194,16 +194,26 @@ export function getVehicleRoutes(services: any): Route[] {
         const driveSession = await DriveSession.findOne({_id: sessionId});
         if (driveSession && !driveSession.tags.includes(tag)) {
           driveSession.tags.push(tag);
-          await DriveSession.updateOne({_id: sessionId}, driveSession);
-          res.status(OK)
-                    .json(driveSession.tags);
+          const result = await DriveSession.updateOne({_id: sessionId}, driveSession);
+          if(result.ok){
+            res.status(OK)
+               .json(driveSession.tags);
+          }else {
+            res.status(INTERNAL_SERVER_ERROR)
+               .end();
+          }
         } else {
           const chargeSession = await ChargeSession.findOne({_id: sessionId});
           if (chargeSession && !chargeSession.tags.includes(tag)) {
             chargeSession.tags.push(tag);
-            await ChargeSession.updateOne({_id:sessionId}, chargeSession);
-            res.status(OK)
-                      .json(chargeSession.tags);
+            const result = await ChargeSession.updateOne({_id:sessionId}, chargeSession);
+            if(result.ok){
+              res.status(OK)
+                 .json(chargeSession.tags);
+            }else {
+              res.status(INTERNAL_SERVER_ERROR)
+                 .end();
+            }
           } else {
             res.status(INTERNAL_SERVER_ERROR)
                .end();
@@ -219,16 +229,26 @@ export function getVehicleRoutes(services: any): Route[] {
         const driveSession = await DriveSession.findOne({_id: sessionId});
         if (driveSession && driveSession.tags.includes(tag)) {
           driveSession.tags.splice(driveSession.tags.indexOf(tag), 1);
-          await DriveSession.updateOne({sessionId}, driveSession);
-          res.status(OK)
-                    .json(driveSession.tags);
+          const result = await DriveSession.updateOne({sessionId}, driveSession);
+          if(result.ok){
+            res.status(OK)
+               .json(driveSession.tags);
+          }else {
+            res.status(INTERNAL_SERVER_ERROR)
+               .end();
+          }
         } else {
           const chargeSession = await ChargeSession.findOne({_id: sessionId});
           if (chargeSession && chargeSession.tags.includes(tag)) {
             chargeSession.tags.slice(chargeSession.tags.indexOf(tag), 1);
-            await ChargeSession.updateOne({sessionId}, chargeSession);
-            res.status(OK)
-                      .json(chargeSession.tags);
+            const result = await ChargeSession.updateOne({sessionId}, chargeSession);
+            if(result.ok){
+              res.status(OK)
+                 .json(chargeSession.tags);
+            }else {
+              res.status(INTERNAL_SERVER_ERROR)
+                 .end();
+            }
           } else {
             res.status(INTERNAL_SERVER_ERROR)
                .end();
