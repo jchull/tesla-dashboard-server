@@ -367,7 +367,7 @@ export function getVehicleRoutes(services: any): Route[] {
     },
 
     {
-      path: '/vehicle/:vin/session/:sessionId',
+      path: '/session/:sessionId',
       method: 'delete',
       handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const _id = req.params.sessionId;
