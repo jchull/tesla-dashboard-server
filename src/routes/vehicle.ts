@@ -3,9 +3,10 @@ import {ChargeSession, ChargeSessionType, ChargeState, DriveSession, DriveSessio
 import {BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNAUTHORIZED} from 'http-status-codes';
 import {SyncPreferences, DriveSession as IDriveSession, ChargeSession as IChargeSession} from 'tesla-dashboard-api';
 import {Route} from '../util';
+import {ServicesType} from '../services';
 
 type VehicleSession = IDriveSession | IChargeSession;
-export function getVehicleRoutes(services: any): Route[] {
+export function getVehicleRoutes(services: ServicesType): Route[] {
   return [
     {
       path: '/vehicle',
@@ -141,27 +142,27 @@ export function getVehicleRoutes(services: any): Route[] {
       handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         //const limit = req.query.limit && Number(req.query.limit) || 1;
         //const {vin} = req.params;
-        const {filters} = req.body;
-        const sessions = await services.vs.filteredSessions(filters);
-        // const driveSessions = await DriveSession.find({vehicle})
-        //                                         .sort({$natural: -1})
-        //                                         .limit(limit)
-        //                                         .populate(['first', 'last', 'vehicle']);
-        // const chargeSessions = await ChargeSession.find({vehicle})
-        //                                           .sort({$natural: -1})
-        //                                           .limit(limit)
-        //                                           .populate(['first', 'last', 'vehicle']);
-        // const sessions = driveSessions.concat(chargeSessions)
-        //                               // @ts-ignore
-        //                               .sort((a: IVehicleSession, b: IVehicleSession) => b.start_date - a.start_date)// reverse sort
-        //                               .slice(0, limit);
-        if (sessions.length) {
-          res.status(OK)
-                    .json(sessions);
-        } else {
-          res.status(INTERNAL_SERVER_ERROR)
-                    .end();
-        }
+        // const {filters} = req.body;
+        // const sessions = await services.vs.filteredSessions(filters);
+        // // const driveSessions = await DriveSession.find({vehicle})
+        // //                                         .sort({$natural: -1})
+        // //                                         .limit(limit)
+        // //                                         .populate(['first', 'last', 'vehicle']);
+        // // const chargeSessions = await ChargeSession.find({vehicle})
+        // //                                           .sort({$natural: -1})
+        // //                                           .limit(limit)
+        // //                                           .populate(['first', 'last', 'vehicle']);
+        // // const sessions = driveSessions.concat(chargeSessions)
+        // //                               // @ts-ignore
+        // //                               .sort((a: IVehicleSession, b: IVehicleSession) => b.start_date - a.start_date)// reverse sort
+        // //                               .slice(0, limit);
+        // if (sessions.length) {
+        //   res.status(OK)
+        //             .json(sessions);
+        // } else {
+        //   res.status(INTERNAL_SERVER_ERROR)
+        //             .end();
+        // }
       }
     },
 

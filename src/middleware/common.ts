@@ -25,7 +25,6 @@ export const handleStatic = (router: Router) => {
 };
 
 export const handleAuthentication = (router: Router) => {
-  // @ts-ignore
   router.use(authorized());
 };
 

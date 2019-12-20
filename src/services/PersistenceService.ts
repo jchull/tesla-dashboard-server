@@ -17,10 +17,10 @@ export class PersistenceService {
     }
 
     public static async getConfiguration(): Promise<ConfigurationType> {
-        const config = <ConfigurationType>await Configuration.findOne();
+        const config = await Configuration.findOne();
         if (!config) {
             console.log('No app configuration found, installing default...');
-            const newConfig = <ConfigurationType>await Configuration.create(DEFAULT_CONFIG);
+            const newConfig = await Configuration.create(DEFAULT_CONFIG);
             return newConfig;
         }
         return config;

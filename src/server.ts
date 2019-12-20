@@ -1,6 +1,6 @@
 import {createServer} from 'http';
 import express from 'express';
-import * as services from './services';
+import {services} from './services';
 import {applyMiddleware, applyRoutes} from './util';
 import {getRoutes} from './routes';
 import middleware from './middleware';

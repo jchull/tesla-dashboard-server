@@ -5,6 +5,7 @@ import {BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, UNAUTHORIZED
 import {ParamsDictionary} from 'express-serve-static-core';
 import {JWT_COOKIE_PROP} from '../services/JwtService';
 import {Route} from '../util';
+import {ServicesType} from '../services';
 
 
 
@@ -12,7 +13,7 @@ const paramMissingError = 'Parameter missing';
 const loginFailedErr = 'Login failed';
 
 
-export function getUserRoutes(services: any): Route[] {
+export function getUserRoutes(services: ServicesType): Route[] {
   const jwtService = services.jwt();
 
   return [

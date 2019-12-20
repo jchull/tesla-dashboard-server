@@ -55,7 +55,7 @@ export class SyncServiceManager {
     }
   }
 
-  private messageHandler(vehicle:Product){
+  private messageHandler(vehicle: Product){
     return (message: any) => {
       console.log(`Vehicle sync for ${vehicle.display_name} sent: ${message}`);
 

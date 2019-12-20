@@ -33,4 +33,6 @@ const vs = new VehicleService();
 const userService = new UserService();
 const ssm = new SyncServiceManager(vs);
 
-export {db, vs, ssm, jwt, userService, appConfig, envConfig};
+export const services = { db, vs, ssm, jwt, userService, envConfig};
+export type ServicesType = typeof services;
+
