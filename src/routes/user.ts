@@ -6,6 +6,8 @@ import {ParamsDictionary} from 'express-serve-static-core';
 import {JWT_COOKIE_PROP} from '../services/JwtService';
 import {Route} from '../util';
 import {ServicesType} from '../services';
+import {TeslaOwnerService} from '../services/TeslaOwnerService';
+import {PersistenceService} from '../services/PersistenceService';
 
 
 
@@ -139,6 +141,77 @@ export function getUserRoutes(services: ServicesType): Route[] {
                     .json({
                       error: err.message
                     });
+        }
+      }
+    },
+    {
+      path: '/user/:username/tesla-account/:_id/token',
+      method: 'post',
+      handler: async (req: Request, res: Response) => {
+        try {
+          // Check Parameters
+          const {username, _id} = req.params;
+          const {password, email} = req.body;
+          const configuration = await PersistenceService.getConfiguration();
+          const data = {
+            email,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            client_id: configuration.teslaClientKey,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            client_secret: configuration.teslaClientSecret,
+            password
+          };
+
+
+          const accounts = await services.userService.getTeslaAccounts(username);
+          if (!accounts) {
+            return res.status(BAD_REQUEST)
+                      .json({
+                              error: paramMissingError
+                            });
+          }
+          const account = accounts.find(acct => _id == acct._id);
+          if(account) {
+            const ownerService = new TeslaOwnerService(configuration.ownerBaseUrl, configuration.teslaClientKey, configuration.teslaClientSecret, account);
+
+
+            const result = await ownerService.updateToken('password', password);
+
+
+
+            // services.t.api({
+            //                         method: 'post',
+            //                         url: `${configuration.data.ownerBaseUrl}/oauth/token?grant_type=password`,
+            //                         data,
+            //                         headers: {
+            //                           'User-Agent': 'coderado-tesla-sync'
+            //                         }
+            //                       })
+            //                .then((res: any) => {
+            //                  console.log('Authenticated with Tesla API');
+            //                  account.access_token = res.data.access_token;
+            //                  account.refresh_token = res.data.refresh_token;
+            //                  account.token_expires_in = res.data.expires_in;
+            //                  account.token_created_at = Date.now();
+            //                  return this.updateTeslaAccount(account);
+            //                })
+            //                .catch((error: any) => {
+            //                  console.error(error);
+            //                });
+
+            return res.status(OK)
+                      .json(account);
+          } else {
+            return res.status(INTERNAL_SERVER_ERROR)
+                      .json({
+                              message: 'Could not update Tesla Account token'
+                            });
+          }
+        } catch (err) {
+          return res.status(BAD_REQUEST)
+                    .json({
+                            error: err.message
+                          });
         }
       }
     },

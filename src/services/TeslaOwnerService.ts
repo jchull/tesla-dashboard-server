@@ -28,15 +28,20 @@ export class TeslaOwnerService {
     }
   };
 
-  updateToken(grant_type: string) {
+  updateToken(grant_type: string, password?: string) {
     const data = {
       email: this.teslaAccount.email,
       client_id: this.clientId,
       client_secret: this.clientSecret,
       grant_type
     };
-    // @ts-ignore
-    data[grant_type] = this.teslaAccount[grant_type];
+    if(password && grant_type === 'password'){
+      // @ts-ignore
+      data[grant_type] = password;
+    }else {
+      // @ts-ignore
+      data[grant_type] = this.teslaAccount[grant_type];
+    }
     return axios({
       method: 'post',
       url: `${this.endpoint}/oauth/token?grant_type=${grant_type}`,

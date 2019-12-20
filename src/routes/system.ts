@@ -11,15 +11,14 @@ export function getSystemRoutes(services: ServicesType): Route[] {
       method: 'get',
       handler: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const config = await PersistenceService.getConfiguration();
-        if(config){
-          // @ts-ignore
-          return res.status(OK).json(config);
+        if (config) {
+          return res.status(OK).json(config).end();
         } else {
           return res.status(NOT_FOUND)
-             .end();
+                    .end();
         }
       }
-    },
+    }
 
   ];
 }
